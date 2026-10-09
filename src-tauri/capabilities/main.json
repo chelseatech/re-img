@@ -1,0 +1,1 @@
+{ "identifier": "main", "description": "Local file picker and window events only", "windows": ["main"], "permissions": ["core:default", "dialog:allow-open"] }
