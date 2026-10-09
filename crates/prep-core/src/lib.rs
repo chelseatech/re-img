@@ -4,6 +4,10 @@ use serde::{Deserialize, Serialize};
 use moxcms::{ColorProfile, DataColorSpace, Layout, ProfileClass, RenderingIntent, TransformOptions};
 use std::{fs::{self, OpenOptions}, io::Write, path::{Path, PathBuf}};
 
+mod colour_metadata;
+const MAX_DECODE_BYTES: u64 = 256 * 1024 * 1024;
+const COLOUR_FALLBACK: &str = "Convert a copy to sRGB in a colour-managed editor and retry; the original has not been changed.";
+
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Options {
     pub width: u32, pub height: u32, pub max_bytes: Option<u64>,
@@ -43,13 +47,18 @@ pub fn load(path: &Path) -> Result<DynamicImage, String> {
     if fs::metadata(path).map_err(|e| e.to_string())?.len() > 100_000_000 { return Err("Source exceeds the 100 MB prototype input limit.".into()); }
     let mut reader = ImageReader::open(path).map_err(|e| e.to_string())?.with_guessed_format().map_err(|e| e.to_string())?;
     if !matches!(reader.format(), Some(image::ImageFormat::Jpeg | image::ImageFormat::Png | image::ImageFormat::WebP)) { return Err("Use JPEG, PNG or WebP. HEIC, RAW and animated formats are deferred.".into()); }
+    let has_icc = colour_metadata::has_icc(path, reader.format().unwrap())
+        .map_err(|e| format!("Cannot validate source ICC/colour metadata: {e}. {COLOUR_FALLBACK}"))?;
     let mut limits = image::Limits::default();
-    limits.max_image_width = Some(16000); limits.max_image_height = Some(16000); limits.max_alloc = Some(256 * 1024 * 1024);
+    limits.max_image_width = Some(16000); limits.max_image_height = Some(16000); limits.max_alloc = Some(MAX_DECODE_BYTES);
     reader.limits(limits);
     let mut decoder = reader.into_decoder().map_err(|e| e.to_string())?;
     let (w, h) = decoder.dimensions();
     if w as u64 * h as u64 > 64_000_000 { return Err("Source exceeds the 64 megapixel prototype limit.".into()); }
+    // from_decoder bypasses ImageReader::decode's output-buffer reservation.
+    if decoder.total_bytes() > MAX_DECODE_BYTES { return Err("Source exceeds the 256 MiB decoded-pixel limit.".into()); }
     let icc = decoder.icc_profile().map_err(|e| format!("Cannot read embedded ICC profile: {e}. Convert a copy to sRGB in a colour-managed editor and retry."))?;
+    if has_icc && icc.is_none() { return Err(format!("Invalid or unreadable embedded ICC profile. {COLOUR_FALLBACK}")); }
     let orientation = decoder.orientation().map_err(|e| e.to_string())?;
     let mut img = DynamicImage::from_decoder(decoder).map_err(|e| e.to_string())?;
     if let Some(profile) = icc {
@@ -60,9 +69,12 @@ pub fn load(path: &Path) -> Result<DynamicImage, String> {
 }
 
 // Both preview and export call load, so they use the same colour conversion.
-// Transform in place, row by row, to avoid another full-size image allocation.
+// The normal transform supports both matrix and LUT RGB profiles. moxcms's
+// in-place API only supports matrix profiles and may ignore an available LUT.
+// One reusable output row avoids another full-size image allocation.
 fn convert_to_srgb(img: &mut DynamicImage, icc: &[u8]) -> Result<(), String> {
-    let fallback = "Convert a copy to sRGB in a colour-managed editor and retry; the original has not been changed.";
+    let fallback = COLOUR_FALLBACK;
+    colour_metadata::validate_profile_size(icc).map_err(|e| format!("{e}. {fallback}"))?;
     let source = ColorProfile::new_from_slice(icc)
         .map_err(|e| format!("Invalid or unsupported embedded ICC profile: {e}. {fallback}"))?;
     // The JPEG decoder has already converted CMYK to RGB. Applying a CMYK
@@ -78,17 +90,19 @@ fn convert_to_srgb(img: &mut DynamicImage, icc: &[u8]) -> Result<(), String> {
         ($pixels:expr, $layout:expr, $create:ident) => {{
             let pixels = $pixels;
             let stride = pixels.width() as usize * if $layout == Layout::Rgba { 4 } else { 3 };
-            let transform = source.$create($layout, &destination, options).map_err(conversion_error)?;
+            let transform = source.$create($layout, &destination, $layout, options).map_err(conversion_error)?;
+            let mut converted = vec![0; stride];
             for row in pixels.as_mut().chunks_exact_mut(stride) {
-                transform.transform(row).map_err(conversion_error)?;
+                transform.transform(row, &mut converted).map_err(conversion_error)?;
+                row.copy_from_slice(&converted);
             }
         }};
     }
     match img {
-        DynamicImage::ImageRgb8(pixels) => transform!(pixels, Layout::Rgb, create_in_place_transform_8bit),
-        DynamicImage::ImageRgba8(pixels) => transform!(pixels, Layout::Rgba, create_in_place_transform_8bit),
-        DynamicImage::ImageRgb16(pixels) => transform!(pixels, Layout::Rgb, create_in_place_transform_16bit),
-        DynamicImage::ImageRgba16(pixels) => transform!(pixels, Layout::Rgba, create_in_place_transform_16bit),
+        DynamicImage::ImageRgb8(pixels) => transform!(pixels, Layout::Rgb, create_transform_8bit),
+        DynamicImage::ImageRgba8(pixels) => transform!(pixels, Layout::Rgba, create_transform_8bit),
+        DynamicImage::ImageRgb16(pixels) => transform!(pixels, Layout::Rgb, create_transform_16bit),
+        DynamicImage::ImageRgba16(pixels) => transform!(pixels, Layout::Rgba, create_transform_16bit),
         _ => return Err(format!("Embedded RGB ICC profile does not match the decoded image colour channels. {fallback}")),
     }
     Ok(())
@@ -198,6 +212,193 @@ mod tests {
         encoder.set_icc_profile(profile).unwrap();
         encoder.write_image(img, img.width(), img.height(), image::ExtendedColorType::Rgba8).unwrap();
         data
+    }
+    use moxcms::{LutDataType, LutStore, LutType, LutWarehouse, Matrix3d};
+    fn rgb_profile_with_black_lut() -> Vec<u8> {
+        let mut source = ColorProfile::new_srgb();
+        source.lut_a_to_b_colorimetric = Some(LutWarehouse::Lut(LutDataType {
+            num_input_channels: 3,
+            num_output_channels: 3,
+            num_clut_grid_points: 2,
+            matrix: Matrix3d { v: [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]] },
+            num_input_table_entries: 2,
+            num_output_table_entries: 2,
+            input_table: LutStore::Store16(vec![0, 65535, 0, 65535, 0, 65535]),
+            clut_table: LutStore::Store16(vec![0; 2 * 2 * 2 * 3]),
+            output_table: LutStore::Store16(vec![0, 65535, 0, 65535, 0, 65535]),
+            lut_type: LutType::Lut16,
+        }));
+        source.encode().unwrap()
+    }
+
+
+    #[test] fn mixed_matrix_and_lut_icc_uses_lut_and_preserves_alpha() {
+        let pixels = image::RgbaImage::from_pixel(5, 3, image::Rgba([128, 96, 64, 170]));
+        let mut img = DynamicImage::ImageRgba8(pixels);
+        convert_to_srgb(&mut img, &rgb_profile_with_black_lut()).unwrap();
+        for pixel in img.to_rgba8().pixels() { assert_eq!(pixel.0, [0, 0, 0, 170]); }
+    }
+    fn jpeg_with_segments(segments: &[(u8, Vec<u8>)]) -> Vec<u8> {
+        let mut jpeg = Vec::new();
+        JpegEncoder::new_with_quality(&mut jpeg, 95).encode_image(&DynamicImage::new_rgb8(100, 100)).unwrap();
+        let mut output = jpeg[..2].to_vec();
+        for (marker, payload) in segments {
+            output.extend_from_slice(&[0xff, *marker]);
+            output.extend_from_slice(&((payload.len() + 2) as u16).to_be_bytes());
+            output.extend_from_slice(payload);
+        }
+        output.extend_from_slice(&jpeg[2..]); output
+    }
+    fn icc_segment(sequence: u8, count: u8, profile: &[u8]) -> (u8, Vec<u8>) {
+        let mut bytes = b"ICC_PROFILE\0".to_vec();
+        bytes.extend_from_slice(&[sequence, count]); bytes.extend_from_slice(profile);
+        (0xe2, bytes)
+    }
+    fn assert_import_rejected_unchanged(bytes: &[u8], extension: &str) {
+        let dir = fixture_dir(); let path = dir.join(format!("corrupt.{extension}"));
+        fs::write(&path, bytes).unwrap();
+        let error = export(&path, &dir, &options()).err().expect("Corrupt ICC must not become untagged sRGB");
+        assert!(error.contains("ICC"), "{error}");
+        assert!(error.contains("Convert a copy to sRGB"), "{error}");
+        assert_eq!(fs::read(&path).unwrap(), bytes);
+        assert_eq!(fs::read_dir(&dir).unwrap().count(), 1);
+        fs::remove_file(path).unwrap(); fs::remove_dir(dir).unwrap();
+    }
+    #[test] fn incomplete_duplicate_and_inconsistent_jpeg_icc_are_rejected() {
+        let profile = ColorProfile::new_adobe_rgb().encode().unwrap();
+        for segments in [
+            vec![icc_segment(1, 2, &profile)],
+            vec![icc_segment(1, 2, &profile), icc_segment(1, 2, &profile)],
+            vec![icc_segment(1, 2, &profile), icc_segment(2, 3, &profile)],
+            vec![icc_segment(0, 1, &profile)],
+        ] { assert_import_rejected_unchanged(&jpeg_with_segments(&segments), "jpg"); }
+    }
+    #[test] fn incorrect_icc_declared_size_is_rejected() {
+        let pixels = image::RgbaImage::from_pixel(100, 100, image::Rgba([100; 4]));
+        let mut profile = ColorProfile::new_srgb().encode().unwrap();
+        profile[..4].copy_from_slice(&132u32.to_be_bytes());
+        assert_import_rejected_unchanged(&tagged_png(&pixels, profile), "png");
+    }
+    fn png_chunk(kind: &[u8; 4], payload: &[u8]) -> Vec<u8> {
+        let mut chunk = (payload.len() as u32).to_be_bytes().to_vec();
+        chunk.extend_from_slice(kind); chunk.extend_from_slice(payload);
+        let mut crc = u32::MAX;
+        for byte in &chunk[4..] {
+            crc ^= *byte as u32;
+            for _ in 0..8 { crc = (crc >> 1) ^ (0xedb88320u32 & (0u32.wrapping_sub(crc & 1))); }
+        }
+        chunk.extend_from_slice(&(!crc).to_be_bytes()); chunk
+    }
+    #[test] fn malformed_png_compressed_profile_is_not_treated_as_untagged() {
+        let mut clean = Vec::new(); let pixels = image::RgbaImage::new(100, 100);
+        PngEncoder::new(&mut clean).write_image(&pixels, 100, 100, image::ExtendedColorType::Rgba8).unwrap();
+        // A valid ancillary CRC with invalid ICC compression, after IHDR.
+        let chunk = png_chunk(b"iCCP", b"Profile\0\0not zlib data");
+        clean.splice(33..33, chunk);
+        assert_import_rejected_unchanged(&clean, "png");
+    }
+    #[test] fn duplicate_and_late_png_icc_chunks_are_rejected() {
+        let pixels = image::RgbaImage::new(100, 100);
+        let png = tagged_png(&pixels, ColorProfile::new_srgb().encode().unwrap());
+        let length = u32::from_be_bytes(png[33..37].try_into().unwrap()) as usize + 12;
+        assert_eq!(&png[37..41], b"iCCP");
+        let chunk = &png[33..33 + length];
+        let mut duplicate = png.clone(); duplicate.splice(33..33, chunk.iter().copied());
+        assert_import_rejected_unchanged(&duplicate, "png");
+        let mut late = png.clone(); late.drain(33..33 + length);
+        late.splice(late.len() - 12..late.len() - 12, chunk.iter().copied());
+        assert_import_rejected_unchanged(&late, "png");
+    }
+    #[test] fn webp_icc_flag_and_duplicate_chunks_are_validated() {
+        let webp = encode(&DynamicImage::new_rgb8(100, 100), "webp", 90).unwrap();
+        assert_eq!(&webp[12..16], b"VP8X");
+        let mut start = 12;
+        while &webp[start..start + 4] != b"ICCP" {
+            let size = u32::from_le_bytes(webp[start + 4..start + 8].try_into().unwrap()) as usize;
+            start += 8 + size + size % 2;
+        }
+        let size = u32::from_le_bytes(webp[start + 4..start + 8].try_into().unwrap()) as usize;
+        let end = start + 8 + size + size % 2;
+        let mut missing = webp.clone(); missing.drain(start..end);
+        let length = (missing.len() - 8) as u32; missing[4..8].copy_from_slice(&length.to_le_bytes());
+        assert_import_rejected_unchanged(&missing, "webp");
+        let mut duplicate = webp.clone(); duplicate.splice(start..start, webp[start..end].iter().copied());
+        let length = (duplicate.len() - 8) as u32; duplicate[4..8].copy_from_slice(&length.to_le_bytes());
+        assert_import_rejected_unchanged(&duplicate, "webp");
+        let mut flag_missing = webp; flag_missing[20] &= !0x20;
+        assert_import_rejected_unchanged(&flag_missing, "webp");
+    }
+    #[test] fn four_component_jpeg_is_rejected_before_naive_rgb_conversion() {
+        // Four-component SOF, rejected before entropy decode even if tagged RGB.
+        let frame = vec![8, 0, 100, 0, 100, 4, 1, 0x11, 0, 2, 0x11, 0, 3, 0x11, 0, 4, 0x11, 0];
+        let profile = ColorProfile::new_srgb().encode().unwrap();
+        let bytes = jpeg_with_segments(&[icc_segment(1, 1, &profile), (0xc0, frame.clone())]);
+        assert_import_rejected_unchanged(&bytes, "jpg");
+        assert_import_rejected_unchanged(&jpeg_with_segments(&[(0xc0, frame)]), "jpg");
+    }
+    #[test] fn out_of_order_complete_jpeg_profile_is_accepted() {
+        let profile = ColorProfile::new_srgb().encode().unwrap();
+        let split = profile.len() / 2;
+        let bytes = jpeg_with_segments(&[icc_segment(2, 2, &profile[split..]), icc_segment(1, 2, &profile[..split])]);
+        let dir = fixture_dir(); let path = dir.join("ordered.jpg"); fs::write(&path, &bytes).unwrap();
+        assert_eq!(load(&path).unwrap().dimensions(), (100, 100));
+        assert_eq!(fs::read(&path).unwrap(), bytes); fs::remove_file(path).unwrap(); fs::remove_dir(dir).unwrap();
+    }
+    #[test] fn display_p3_webp_import_converts_rgb_and_keeps_alpha() {
+        let pixels = image::RgbaImage::from_pixel(4, 2, image::Rgba([180, 90, 60, 71]));
+        let mut bytes = Vec::new(); let mut encoder = WebPEncoder::new_lossless(&mut bytes);
+        encoder.set_icc_profile(ColorProfile::new_display_p3().encode().unwrap()).unwrap();
+        encoder.write_image(&pixels, 4, 2, image::ExtendedColorType::Rgba8).unwrap();
+        let dir = fixture_dir(); let path = dir.join("p3.webp"); fs::write(&path, &bytes).unwrap();
+        let loaded = load(&path).unwrap().to_rgba8();
+        // Display-P3 matrix with the sRGB transfer curve gives approximately [194, 83, 49].
+        let pixel = loaded.get_pixel(0, 0).0;
+        for (actual, expected) in pixel[..3].iter().zip([194u8, 83, 49]) { assert!(actual.abs_diff(expected) <= 2, "{pixel:?}"); }
+        assert_eq!(pixel[3], 71);
+        assert_eq!(fs::read(&path).unwrap(), bytes); fs::remove_file(path).unwrap(); fs::remove_dir(dir).unwrap();
+    }
+    #[test] fn untagged_pixels_are_unchanged() {
+        let pixels = image::RgbaImage::from_fn(8, 3, |x, y| image::Rgba([x as u8 * 30, y as u8 * 90, 61, 81]));
+        let dir = fixture_dir(); let path = dir.join("untagged.png");
+        pixels.save(&path).unwrap(); assert_eq!(load(&path).unwrap().to_rgba8(), pixels);
+        fs::remove_file(path).unwrap(); fs::remove_dir(dir).unwrap();
+    }
+    #[test] fn sixteen_bit_decode_buffer_limit_is_checked_before_allocation() {
+        let mut bytes = b"\x89PNG\r\n\x1a\n".to_vec();
+        let mut header = 8000u32.to_be_bytes().to_vec(); header.extend_from_slice(&5000u32.to_be_bytes());
+        header.extend_from_slice(&[16, 6, 0, 0, 0]); // RGBA16: 320 MB decoded.
+        bytes.extend(png_chunk(b"IHDR", &header));
+        bytes.extend(png_chunk(b"IDAT", &[0x78, 0x9c, 3, 0, 0, 0, 0, 1]));
+        bytes.extend(png_chunk(b"IEND", &[]));
+        let dir = fixture_dir(); let path = dir.join("large.png"); fs::write(&path, &bytes).unwrap();
+        assert!(load(&path).unwrap_err().contains("256 MiB"));
+        assert_eq!(fs::read(&path).unwrap(), bytes); fs::remove_file(path).unwrap(); fs::remove_dir(dir).unwrap();
+    }
+    #[test] fn all_exif_orientations_are_applied_once_and_removed_from_derivatives() {
+        let pixels = image::RgbaImage::from_fn(3, 2, |x, y| image::Rgba([((y * 3 + x + 1) * 30) as u8, 70, 100, 170]));
+        let expected = [[1,2,3,4,5,6], [3,2,1,6,5,4], [6,5,4,3,2,1], [4,5,6,1,2,3],
+            [1,4,2,5,3,6], [4,1,5,2,6,3], [6,3,5,2,4,1], [3,6,2,5,1,4]];
+        let dir = fixture_dir(); let path = dir.join("oriented.png");
+        for orientation in 1u8..=8 {
+            let mut exif = b"II\x2a\0\x08\0\0\0\x01\0\x12\x01\x03\0\x01\0\0\0\x01\0\0\0\0\0\0\0".to_vec();
+            exif[18] = orientation;
+            let mut bytes = Vec::new(); let mut encoder = PngEncoder::new(&mut bytes);
+            encoder.set_icc_profile(ColorProfile::new_srgb().encode().unwrap()).unwrap();
+            encoder.set_exif_metadata(exif).unwrap();
+            encoder.write_image(&pixels, 3, 2, image::ExtendedColorType::Rgba8).unwrap(); fs::write(&path, &bytes).unwrap();
+            let loaded = load(&path).unwrap(); let dimensions = if orientation < 5 { (3,2) } else { (2,3) };
+            assert_eq!(loaded.dimensions(), dimensions);
+            let labels: Vec<u8> = loaded.to_rgba8().pixels().map(|p| p[0] / 30).collect();
+            assert_eq!(labels, expected[(orientation - 1) as usize], "Orientation {orientation}");
+            let mut o = options(); o.width = dimensions.0; o.height = dimensions.1;
+            let result = export(&path, &dir, &o).unwrap();
+            assert_eq!(load(Path::new(&result.path)).unwrap().to_rgba8(), loaded.to_rgba8());
+            let mut decoder = ImageReader::open(&result.path).unwrap().into_decoder().unwrap();
+            assert!(decoder.exif_metadata().unwrap().is_none()); assert!(decoder.xmp_metadata().unwrap().is_none()); assert!(decoder.iptc_metadata().unwrap().is_none());
+            assert_eq!(decoder.orientation().unwrap(), image::metadata::Orientation::NoTransforms);
+            assert_eq!(fs::read(&path).unwrap(), bytes); fs::remove_file(result.path).unwrap();
+        }
+        fs::remove_file(path).unwrap(); fs::remove_dir(dir).unwrap();
     }
     #[test] fn srgb_tagged_input_preserves_pixels_and_alpha() {
         let pixels = image::RgbaImage::from_fn(5, 3, |x, y| image::Rgba([40 + x as u8 * 30, 60 + y as u8 * 25, 100, x as u8 * 50]));
