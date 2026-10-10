@@ -3,10 +3,10 @@ import { invoke } from '@tauri-apps/api/core';
 import { getCurrentWebview } from '@tauri-apps/api/webview';
 import { open } from '@tauri-apps/plugin-dialog';
 import { cropRect, outputSize } from './crop.js';
-import { loadPresets, persistPresets, createPreset, restoreStarterPresets } from './presets.js';
+import { legacyDefaults, loadPresets, persistPresets, createPreset, restoreStarterPresets } from './presets.js';
 
 let presets = loadPresets();
-let items = [], selected = null, busy = false, directory = '', profileIndex = 0;
+let items = [], selected = null, busy = false, directory = '', profileIndex = legacyDefaults.length;
 let previewImage = null, view = null, pointer = null;
 const $ = id => document.getElementById(id);
 const bytes = n => n >= 1000000 ? `${(n / 1000000).toFixed(2)} MB` : `${(n / 1000).toFixed(1)} KB`;
@@ -26,11 +26,18 @@ document.querySelector('#app').innerHTML = `
       </div>
       <div class="settings panel"><div class="section-heading"><h2>Prepare your export</h2><span id="profile-tag" class="tag">uOttawa</span></div>
         <div class="controls"><div class="profile-control"><label for="profile">Website profile</label><div class="profile-picker"><select id="profile"></select><button id="create-preset" class="secondary" type="button">Create preset</button></div></div><label>File format<select id="format"><option value="jpeg">JPEG · photographs</option><option value="png">PNG · transparency / graphics</option><option value="webp">WebP · lossless (custom only)</option></select></label></div>
+        <div id="profile-guidance" class="source-guidance" hidden>
+          <p id="source-verification" class="verification" role="status" hidden></p>
+          <p id="source-dimensions"></p><p id="source-formats"></p>
+          <label id="variant-label" hidden>Image variant<select id="variant"></select></label>
+          <p id="dimension-choice" class="verification" role="status" hidden></p>
+          <details><summary>Component usage &amp; official source</summary><p id="source-notes"></p><p><a id="source-link" target="_blank" rel="noopener noreferrer">View official specifications</a> · <span id="source-date"></span></p></details>
+        </div>
         <div class="controls dimensions"><label>Width · px<input id="width" type="number" min="1" max="10000"></label><label>Height · px<input id="height" type="number" min="1" max="10000"></label><label>Maximum · KB<input id="cap" type="number" min="0" max="100000" step="1"></label><label class="check"><input id="circle" type="checkbox"> Circle preview</label></div>
         <div class="controls"><label id="quality-label">JPEG quality ceiling <input id="quality" type="range" min="1" max="100" value="86"><span id="quality-value">86</span></label><label>JPEG transparency background<select id="background"><option value="">Require a choice if transparent</option><option value="white">White</option><option value="black">Black</option><option value="custom">Custom colour</option></select></label><label id="custom-bg-label" hidden>Background colour<input id="custom-bg" type="color" value="#ffffff"></label></div>
         <label class="check"><input id="smaller" type="checkbox"> Allow smaller derivatives when a source cannot fill the requested size</label>
         <p class="policy">0 KB means no cap · Decimal units: 1 KB = 1,000 bytes; 1 MB = 1,000,000 bytes.<br>Circle overlays export as squares. No upscaling. JPEG quality is lowered only when needed to meet a cap.</p>
-        <details><summary>Colour, metadata & supported files</summary><p>EXIF orientation is applied before cropping. Fresh derivatives omit EXIF/GPS and include an sRGB profile. Embedded RGB ICC profiles are converted to sRGB for preview and export; untagged input is assumed sRGB. Malformed, incomplete or unsupported profiles (including grayscale ICC profiles), and all CMYK/YCCK JPEGs, need conversion of a copy to sRGB in a colour-managed editor first. Matrix and LUT RGB profiles are supported. Use still images; animated PNG/WebP may import the first frame only. HEIC and RAW are deferred. WebP output is lossless only. No universal file-size cap is applied.</p><p>The four uOttawa starter profiles are editable. Full-bleed hero and business card specifications need source verification and are excluded.</p><button id="restore" class="text-button">Restore starter profiles</button></details>
+        <details><summary>Colour, metadata & supported files</summary><p>EXIF orientation is applied before cropping. Fresh derivatives omit EXIF/GPS and include an sRGB profile. Embedded RGB ICC profiles are converted to sRGB for preview and export; untagged input is assumed sRGB. Malformed, incomplete or unsupported profiles (including grayscale ICC profiles), and all CMYK/YCCK JPEGs, need conversion of a copy to sRGB in a colour-managed editor first. Matrix and LUT RGB profiles are supported. Use still images; animated PNG/WebP may import the first frame only. HEIC and RAW are deferred. WebP output is lossless only. No universal file-size cap is applied.</p><p>All 34 official uOttawa component headings are available. Conflicting source statements are flagged for verification. Flexible profiles require your dimensions. Video components describe preview images, not video exports. Your four original uOttawa profiles remain available under Legacy profiles.</p><button id="restore" class="text-button">Restore starter profiles</button></details>
       </div>
     </section>
   </main>
@@ -60,35 +67,62 @@ function options(item) {
   return { width: Number($('width').value), height: Number($('height').value), max_bytes: Number($('cap').value) === 0 ? null : Math.floor(Number($('cap').value) * 1000), format: $('format').value, quality: Number($('quality').value), background: bg === 'white' ? [255,255,255] : bg === 'black' ? [0,0,0] : bg === 'custom' ? [1,3,5].map(i => parseInt(hex.slice(i,i+2),16)) : null, center_x: item.cx, center_y: item.cy, zoom: item.zoom, allow_smaller: $('smaller').checked, uottawa: preset().uottawa };
 }
 function validateControls() {
+  if (preset().variants && !$('variant').value) throw new Error('Choose an image variant for this component before exporting.');
   for (const id of ['width','height','cap']) if (!$(id).checkValidity() || $(id).value === '') throw new Error('Enter valid width, height and maximum size.');
   if (!Number.isInteger(Number($('width').value)) || !Number.isInteger(Number($('height').value))) throw new Error('Dimensions must be whole pixels.');
 }
 function savePreset() {
   try {
     validateControls();
-    const updated = presets.map((p, i) => i === profileIndex ? {...p, width:Number($('width').value),height:Number($('height').value),cap:Number($('cap').value),circle:$('circle').checked,format:$('format').value} : p);
+    const updated = presets.map((p, i) => i === profileIndex ? {...p, width:Number($('width').value),height:Number($('height').value),cap:Number($('cap').value),circle:$('circle').checked,format:$('format').value,...(p.variants ? {variant:$('variant').value} : {})} : p);
     persistPresets(localStorage, updated); presets = updated; notify('');
   } catch (e) { notify(e.message); }
-  draw();
+  renderGuidance(); draw(); updateActions();
 }
 function renderProfiles() {
   $('profile').replaceChildren();
-  presets.forEach((p,i) => { const option=document.createElement('option'); option.value=i; option.textContent=p.name; $('profile').append(option); });
+  for (const [label, matches] of [['uOttawa — official components', p=>Boolean(p.source)], ['Legacy profiles', p=>p.uottawa && !p.source], ['Custom presets', p=>!p.uottawa]]) {
+    const group=document.createElement('optgroup'); group.label=label;
+    presets.forEach((p,i) => { if(!matches(p))return; const option=document.createElement('option');option.value=i;option.textContent=p.name;option.title=p.name;group.append(option); });
+    $('profile').append(group);
+  }
   $('profile').value = String(profileIndex);
 }
+function renderGuidance() {
+  const p=preset(), s=p.source;
+  $('profile-guidance').hidden=!s;
+  if(!s) return;
+  $('source-verification').hidden=!p.verification_needed;
+  $('source-verification').textContent='Verification needed: The source dimensions, ratios or usage notes differ. This preset follows the listed pixels where provided. Confirm which specification applies to your component before using the image on your website.';
+  $('source-dimensions').textContent=`Source dimensions: ${s.dimensions_documented}. Source ratio: ${s.aspect_ratio_documented}.`;
+  $('source-formats').textContent=`Source formats: ${s.formats_documented}${s.source_typo ? ' (interpreted as JPEG or PNG)' : ''}. Source file-size limit: ${s.maximum_weight ?? 'not specified; no app cap unless you choose one'}.${s.maximum_weight ? ' The source does not define byte units; this app uses decimal KB/MB.' : ''}`;
+  $('source-notes').textContent=[...(s.notes??[]),s.discrepancy,s.ambiguity,s.source_typo,s.recommended_min_width_px ? `Recommended minimum width: ${s.recommended_min_width_px}px; no fixed height is specified.` : null].filter(Boolean).join(' ');
+  $('source-link').href=s.url;
+  $('source-date').textContent=`Read ${s.retrieved_date}; no publication/revision date shown.`;
+  const unresolved=p.variants ? !$('variant').value : $('width').value==='' || $('height').value==='';
+  $('dimension-choice').hidden=!unresolved;
+  $('dimension-choice').textContent=p.variants ? 'Choose the image variant below. Each variant has its own documented dimensions.' : 'The source gives flexible dimensions. Enter your chosen width and height below before exporting; no fixed size is assumed.';
+}
 function applyPreset() {
-  const p = preset(); $('width').value = p.width; $('height').value = p.height; $('cap').value = p.cap; $('circle').checked = p.circle;
+  const p = preset(); $('width').value = p.width ?? ''; $('height').value = p.height ?? ''; $('cap').value = p.cap; $('circle').checked = p.circle;
+  $('profile').title=p.name;
+  $('variant-label').hidden=!p.variants;
+  $('variant').replaceChildren();
+  const placeholder=document.createElement('option');placeholder.value='';placeholder.textContent='Choose image variant';$('variant').append(placeholder);
+  for(const variant of p.variants??[]) {const option=document.createElement('option');option.value=variant.name;option.textContent=`${variant.name} · ${variant.width_px} × ${variant.height_px}px`;$('variant').append(option);}
+  $('variant').value=p.variant??'';
   $('format').value = p.format;
   $('smaller').checked = false;
   $('profile-tag').textContent = p.uottawa ? 'uOttawa' : 'Custom';
   $('format').querySelector('[value="webp"]').disabled = p.uottawa;
   if (p.uottawa && $('format').value === 'webp') $('format').value = 'jpeg';
-  formatChange(); draw();
+  renderGuidance(); formatChange(); draw(); updateActions();
 }
 function formatChange() { $('quality-label').hidden = $('format').value !== 'jpeg'; $('background').disabled = $('format').value !== 'jpeg'; $('custom-bg-label').hidden = $('format').value !== 'jpeg' || $('background').value !== 'custom'; draw(); }
 function updateActions() {
-  $('export').disabled = busy || !directory || !items.some(i => i.id !== null);
-  for (const id of ['add','clear','folder','profile','create-preset','format','width','height','cap','circle','quality','background','custom-bg','smaller','zoom','reset','restore']) $(id).disabled = busy;
+  let valid=true; try {validateControls();} catch {valid=false;}
+  $('export').disabled = busy || !valid || !directory || !items.some(i => i.id !== null);
+  for (const id of ['add','clear','folder','profile','create-preset','variant','format','width','height','cap','circle','quality','background','custom-bg','smaller','zoom','reset','restore']) $(id).disabled = busy;
   $('background').disabled = busy || $('format').value !== 'jpeg';
 }
 function renderFiles() {
@@ -168,6 +202,13 @@ $('zoom').oninput = () => { if(selected) {selected.zoom=Number($('zoom').value);
 $('quality').oninput = () => { $('quality-value').textContent=$('quality').value; };
 $('profile').onchange = () => {profileIndex=Number($('profile').value);applyPreset();};
 for (const id of ['width','height','cap','circle']) $(id).onchange=savePreset;
+for (const id of ['width','height','cap']) $(id).oninput=() => {renderGuidance();draw();updateActions();};
+$('variant').onchange=() => {
+  const variant=preset().variants?.find(v=>v.name===$('variant').value);
+  $('width').value=variant?.width_px??''; $('height').value=variant?.height_px??'';
+  $('circle').checked=variant?.shape==='Circular';
+  savePreset();
+};
 $('format').onchange = () => { formatChange(); savePreset(); };
 $('background').onchange = formatChange;
 $('smaller').onchange=draw;

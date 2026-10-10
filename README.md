@@ -1,6 +1,6 @@
 # Web image prep
 
-Windows desktop image-preparation prototype. Tauri 2 shell, vanilla JavaScript/Vite interface, Rust image-processing core. Version 0.1.2 hardens ICC colour conversion and malformed metadata handling. Core tests and the frontend production build have passed in Linux cloud verification; the native Windows app and NSIS installer still require Windows validation.
+Windows desktop image-preparation prototype. Tauri 2 shell, vanilla JavaScript/Vite interface, Rust image-processing core. Version 0.1.2 hardens ICC colour conversion and malformed metadata handling. The Create preset feature branch adds reusable named custom settings and all 34 official uOttawa image-component presets. See [PRESET-VALIDATION.md](PRESET-VALIDATION.md) for current feature checks and Windows build status; [VALIDATION.md](VALIDATION.md) records the ICC baseline checks.
 
 ## Launch on Windows
 
@@ -39,9 +39,19 @@ Use Node 22 LTS or a current supported LTS and Rust 1.88 or newer (required by t
 4. Optionally enter a file-size target in decimal KB. Blank or 0 means no limit. JPEG quality may be lowered to meet it; PNG/WebP remain lossless, and an impossible target produces an export error instead of silently shrinking the image.
 5. Click **Save preset**. The new preset is selected immediately and appears in **Website profile** for future sessions. Edits to its dimensions, target, circle preview or format are saved automatically. Cancel or Escape closes the form without saving.
 
-Presets stay on this device using the app's existing `web-image-prep-presets` localStorage key. Existing five-profile edits are retained. **Restore starter profiles** resets the original five profiles and keeps your created presets. Duplicate names are rejected, and a storage failure keeps the form open with an explanation. New presets are custom profiles; the four uOttawa presets still permit JPEG/PNG only. Presets never authorize upscaling, and choosing a profile resets the optional permission to export smaller derivatives. Originals and existing exports retain the same read-only/unique-filename protection.
+Presets stay on this device using the app's existing `web-image-prep-presets` localStorage key. Existing five-profile edits and previously created presets are retained. **Restore starter profiles** resets the original profiles and official component catalogue, and keeps your created presets. Duplicate names are rejected, and a storage failure keeps the form open with an explanation. New presets are custom profiles; every uOttawa profile permits JPEG/PNG only. Presets never authorize upscaling, and choosing a profile resets the optional permission to export smaller derivatives. Originals and existing exports retain the same read-only/unique-filename protection.
 
-## Starter presets
+## Official uOttawa component presets
+
+The **uOttawa — official components** group contains all 34 exact headings from the authenticated [VirtuO image specifications](https://virtuo.uottawa.ca/en/brand-design/digital-marketing/design/image-specifications), read on 2026-10-10. No publication/revision date was shown; the unpublished draft was not inspected. Complete task-relevant statements, usage notes and observed component anchors are retained in [src/uottawa-specifications.json](src/uottawa-specifications.json).
+
+Select a component to see its documented dimensions, ratio and cap. **Featured article (2)** requires choosing **Image 1** (783×490) or **image 2** (390×390, circle preview); it keeps one component title. The four flexible entries start with blank width/height until you enter a size. The 960×700 reference for **Split screen hero** is not treated as a fixed rule, and the 500px recommendation for **Quick links blocks with tabs and images** is displayed without inventing a height. Responsive ratios remain usage guidance, not forced export sizes. Video component presets prepare still preview images only.
+
+Where pixel dimensions and ratios disagree, both source statements remain visible with **Verification needed**; the app uses the listed pixels without asserting a corrected official ratio. These include the full-bleed components, Business card - Image, Section header with image, Social Feed and Static content block (3). Smaller rounding differences and other ambiguities are also flagged. Obvious source typos such as **JEPG** are interpreted as JPEG while original wording remains available.
+
+All uOttawa output is JPEG or PNG. A missing source cap is labeled **not specified** and starts unset; no universal 1 MB cap is invented. The source prints KB/MB without defining byte convention. This app uses its existing decimal convention (1 KB = 1,000 bytes; 1 MB = 1,000,000 bytes), disclosed beside source limits. Circular uploads use square dimensions with a circle preview.
+
+## Legacy editable profiles
 
 | Profile | Output pixels | Maximum file size | Preview |
 | --- | --- | --- | --- |
@@ -50,7 +60,7 @@ Presets stay on this device using the app's existing `web-image-prep-presets` lo
 | Author portrait | 80 × 80 | 200,000 bytes | Circle; square output |
 | Circular card | 200 × 200 | Unset | Circle; square output |
 
-uOttawa output is JPEG or PNG only. Decimal convention: 1 KB = 1,000 bytes, 1 MB = 1,000,000 bytes. Binary units differ: 1 KiB = 1,024 bytes, 1 MiB = 1,048,576 bytes. There is no universal output cap. 0 in the UI means no cap. The full-bleed hero (1920 × 700 with contradictory 2.21:1 label) and business card (610 × 763 with contradictory 5:4 label) are intentionally excluded until verified.
+The original four uOttawa profiles remain under **Legacy profiles** so their saved edits are preserved. The original **Custom client profile** remains under **Custom presets**. 0 in the UI means no app cap; no upscaling or overwrite behavior changes.
 
 ## Processing guarantees and limitations
 
@@ -65,6 +75,6 @@ uOttawa output is JPEG or PNG only. Decimal convention: 1 KB = 1,000 bytes, 1 MB
 
 ## Validation status
 
-See [VALIDATION.md](VALIDATION.md) for the actual checks attempted, exact helper failure and remaining acceptance steps. The report separates passed cloud checks from the remaining native-app and Windows packaging checks.
+See [PRESET-VALIDATION.md](PRESET-VALIDATION.md) for feature checks and [VALIDATION.md](VALIDATION.md) for baseline ICC checks. The existing Windows workflow is scoped to the repair/Create preset branches and starts a push build only for a workflow change with a `[build-windows]` commit. It retains read-only repository permissions and publishes no releases. Its feature checks compile/test Rust, verify native startup, create a named preset in the real compiled WebView, restart the app, verify persistence, and package a portable ZIP with commit/check/hash information. Debug arguments are supplied only to the CI smoke-test process; none ship in the app or are written to system settings.
 
-The Library item `libfile_c946a7f57bc48191a1662c2038dda592` was resolved by filename to `image specs for uottawa.docx` (17,399,078 bytes in Library metadata). It was **not materialized** into this executor and its screenshots were **not inspected**. The presets use only the four starter specifications in the delegated instruction.
+The older `image specs for uottawa.docx` was not inspected in this executor. The official component catalogue uses the current authenticated VirtuO page extraction, rather than asserting that the older upload is current.

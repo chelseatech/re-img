@@ -1,0 +1,558 @@
+{
+  "source": {
+    "title": "Image specifications | VirtuO",
+    "canonical_url": "https://virtuo.uottawa.ca/en/brand-design/digital-marketing/design/image-specifications",
+    "retrieved_date": "2026-10-10",
+    "revision_or_publication_date": null,
+    "date_note": "No publication/revision date was visible on the viewed page; no time element was present. DRAFT AVAILABLE appeared in the toolbar, so this extraction concerns the normal View page and does not assert coverage of the unpublished draft.",
+    "owner_scope": "University of Ottawa, VirtuO Brand and Design / Digital Marketing / Design; authenticated internal guidance."
+  },
+  "schema_notes": {
+    "formats": "All components intend JPEG or PNG. formats_documented preserves source typos where present; formats_normalized_default is explicitly an interpretation of those typos.",
+    "size_caps": "Null maximum_weight means not specified for that component, not unlimited and not a default 1MB. KB/MB units are preserved as printed; decimal vs binary byte convention is not given.",
+    "dimensions": "Dimensions and aspect ratios are separately recorded source statements. Do not silently replace one with the other when they conflict. Responsive displayed crop ratios are not fixed export dimensions.",
+    "calculations": "Any calculated ratio or mismatch commentary below is arithmetic inference, not an additional official requirement.",
+    "notes": "Crop and usage notes are concise paraphrases of the source. Component anchors are observed DOM ids; append #anchor to canonical_url for source context."
+  },
+  "component_count": 34,
+  "components": [
+    {
+      "name": "Article hero banner - Hero image",
+      "anchor": "p-e4005c62-c6bc-4277-bda2-993baee5ce2c",
+      "dimensions_documented": "1260px by 717px",
+      "width_px": 1260,
+      "height_px": 717,
+      "aspect_ratio_documented": "16:9",
+      "formats_documented": "JPEG or PNG",
+      "shape": "Rectangular",
+      "maximum_weight": "1MB",
+      "notes": [
+        "Article hero below headings/author information; upload to the hero-image slot, distinct from the author image.",
+        "Full page width at XS."
+      ],
+      "discrepancy": "Pixel ratio approximately 1.7573:1, slightly different from 16:9."
+    },
+    {
+      "name": "Article hero banner - Author image",
+      "anchor": "p-ecf3ffb4-1485-4d3e-8d42-426decf680e8",
+      "dimensions_documented": "80px by 80px",
+      "width_px": 80,
+      "height_px": 80,
+      "aspect_ratio_documented": "1:1",
+      "formats_documented": "JPEG or PNG",
+      "shape": "Circular",
+      "maximum_weight": "200KB",
+      "notes": [
+        "Upload a square image; system crops to a circle.",
+        "Author image placed by hero text/author information."
+      ]
+    },
+    {
+      "name": "Article image with description",
+      "anchor": "p-f498ae9d-35e3-4832-a17f-fa98d72f8a15",
+      "dimensions_documented": "830px by 553px",
+      "width_px": 830,
+      "height_px": 553,
+      "aspect_ratio_documented": "3:2",
+      "formats_documented": "JPEG or PNG",
+      "shape": "Rectangular",
+      "maximum_weight": "1MB",
+      "notes": [
+        "Body image for Article, Giving article or other content-body locations."
+      ],
+      "discrepancy": "Pixel ratio approximately 1.5009:1; minor pixel rounding relative to 3:2."
+    },
+    {
+      "name": "Article results block",
+      "anchor": "p-a0a95b28-57ee-4577-a39b-3d025cf7d797",
+      "dimensions_documented": "390px by 260px",
+      "width_px": 390,
+      "height_px": 260,
+      "aspect_ratio_documented": "3:2",
+      "formats_documented": "JPEG or PNG",
+      "shape": "Rectangular",
+      "maximum_weight": null,
+      "notes": [
+        "Image appears left of paragraph text; component only available on limited pages."
+      ]
+    },
+    {
+      "name": "Body text with image",
+      "anchor": "p-f22a3f30-f06f-4a58-8017-9f181faf5751",
+      "dimensions_documented": "Flexible",
+      "width_px": null,
+      "height_px": null,
+      "aspect_ratio_documented": "16:9, 3:2, 4:5",
+      "formats_documented": "JPEG or PNG",
+      "shape": "Rectangular/Square",
+      "maximum_weight": null,
+      "notes": [
+        "Landscape or portrait is allowed. Every image within the same paragraph must use the same dimensions; start a new paragraph to change size."
+      ],
+      "ambiguity": "Shape text includes Square, but explicit ratio list does not include 1:1. Do not silently add an official 1:1 option."
+    },
+    {
+      "name": "Business card - Image",
+      "anchor": "p-fa24370d-1979-47d2-a290-de91eca1b2da",
+      "dimensions_documented": "610px by 763px",
+      "width_px": 610,
+      "height_px": 763,
+      "aspect_ratio_documented": "5:4",
+      "formats_documented": "JPEG or PNG",
+      "shape": "Rectangular (portrait)",
+      "maximum_weight": "200KB",
+      "notes": [
+        "Only on Business Card content type, accompanying a person's profile.",
+        "If no image is available, use polar-grey placeholder with centered logo."
+      ],
+      "discrepancy": "610/763 is approximately 0.7995:1, near portrait 4:5; documented 5:4 is 1.25:1 landscape and conflicts with both dimensions and portrait shape."
+    },
+    {
+      "name": "Callout",
+      "anchor": "p-ac2984af-5b48-495f-8074-7c57020782b1",
+      "dimensions_documented": "280px by 280px",
+      "width_px": 280,
+      "height_px": 280,
+      "aspect_ratio_documented": "1:1",
+      "formats_documented": "JPEG or PNG",
+      "shape": "Circular",
+      "maximum_weight": null,
+      "notes": [
+        "Image is optional; upload square and anticipate automatic circle crop."
+      ]
+    },
+    {
+      "name": "Card collection horizontal",
+      "anchor": "p-53f57f47-d66e-41a2-80df-592198f34ab2",
+      "dimensions_documented": "200px by 200px",
+      "width_px": 200,
+      "height_px": 200,
+      "aspect_ratio_documented": "1:1",
+      "formats_documented": "JPEG or PNG",
+      "shape": "Circular",
+      "maximum_weight": null,
+      "notes": [
+        "Upload square; automatic circle crop. Card-collection family shares image specifications."
+      ]
+    },
+    {
+      "name": "Card collection with link and description",
+      "anchor": "p-72c6277b-c1e2-41f5-bb65-855e054e11ae",
+      "dimensions_documented": "200px by 200px",
+      "width_px": 200,
+      "height_px": 200,
+      "aspect_ratio_documented": "1:1",
+      "formats_documented": "JPEG or PNG",
+      "shape": "Circular",
+      "maximum_weight": null,
+      "notes": [
+        "Upload square; automatic circle crop. Each section highlights one topic/link; use Card collection with links for multiple links."
+      ]
+    },
+    {
+      "name": "Card collection with links",
+      "anchor": "p-e97af25c-6feb-4710-a8be-89f5a1fa6a48",
+      "dimensions_documented": "200px by 200px",
+      "width_px": 200,
+      "height_px": 200,
+      "aspect_ratio_documented": "1:1",
+      "formats_documented": "JPEG or PNG",
+      "shape": "Circular",
+      "maximum_weight": null,
+      "notes": [
+        "Upload square; automatic circle crop. Suitable for in-page navigation."
+      ]
+    },
+    {
+      "name": "Contact us with text",
+      "anchor": "p-82718084-9d4b-45bc-a430-a0de5b4a39db",
+      "dimensions_documented": "180 px by 180 px",
+      "width_px": 180,
+      "height_px": 180,
+      "aspect_ratio_documented": "1:1",
+      "formats_documented": "JPEG or PNG",
+      "shape": "Circular",
+      "maximum_weight": null,
+      "notes": [
+        "Only in page contact section; optional photo should show the referenced person/building.",
+        "Upload square; automatic circle crop."
+      ]
+    },
+    {
+      "name": "Featured article (1)",
+      "anchor": "p-8d881c49-b604-4497-8c7b-57134d848e39",
+      "dimensions_documented": "1270px by 717px",
+      "width_px": 1270,
+      "height_px": 717,
+      "aspect_ratio_documented": "1.78:1 (ratio/fractional ratio) 16:9 (nearest common ratio)",
+      "formats_documented": "JPEG or PNG",
+      "shape": "Rectangular",
+      "maximum_weight": null,
+      "notes": [
+        "Featured article/fund, also available on flex pages; use an eye-catching image."
+      ],
+      "discrepancy": "Pixel ratio approximately 1.7713:1, slightly different from both printed 1.78 and 16:9."
+    },
+    {
+      "name": "Featured article (2)",
+      "anchor": "p-868dd88a-61f1-4ea4-b8ea-58d9a97643ff",
+      "dimensions_documented": "Image 1 - 783px by 490px; image 2 - 390px by 390px",
+      "aspect_ratio_documented": "Image 1 - 1.6:1 (ratio/fractional ratio) 3:2 (nearest common ratio); image 2 - 1:1",
+      "formats_documented": "JPEG or PNG",
+      "maximum_weight": null,
+      "variants": [
+        {
+          "name": "Image 1",
+          "width_px": 783,
+          "height_px": 490,
+          "shape": "Rectangular",
+          "aspect_ratio_documented": "1.6:1; 3:2 nearest common ratio",
+          "discrepancy": "783/490 approximately 1.5980:1. 3:2 is expressly an approximate nearest common ratio, not the exact pixel ratio."
+        },
+        {
+          "name": "image 2",
+          "width_px": 390,
+          "height_px": 390,
+          "shape": "Circular",
+          "aspect_ratio_documented": "1:1"
+        }
+      ],
+      "notes": [
+        "Two different image layouts for a pair of articles; image zooms on hover."
+      ]
+    },
+    {
+      "name": "Featured articles or events (3) with images",
+      "anchor": "p-9a5574cd-9a61-4ced-a442-28ef37b6def8",
+      "dimensions_documented": "390px by 260px",
+      "width_px": 390,
+      "height_px": 260,
+      "aspect_ratio_documented": "3:2",
+      "formats_documented": "JPEG or PNG",
+      "shape": "Rectangular",
+      "maximum_weight": null,
+      "notes": [
+        "Collection of related events or articles."
+      ]
+    },
+    {
+      "name": "Featured article with sidebar",
+      "anchor": "p-856cf98d-18b6-4dbb-bae9-52b993c16141",
+      "dimensions_documented": "779px by 519px",
+      "width_px": 779,
+      "height_px": 519,
+      "aspect_ratio_documented": "1.5:1 (ratio/fractional ratio) 3:2 (nearest common ratio)",
+      "formats_documented": "JPEG or PNG",
+      "shape": "Rectangular",
+      "maximum_weight": null,
+      "notes": [
+        "Featured article plus sidebar; use clear engaging main image.",
+        "Center remains focal point on resize; sides crop."
+      ],
+      "discrepancy": "Pixel ratio approximately 1.5010:1; minor rounding relative to 3:2."
+    },
+    {
+      "name": "Featured event with sidebar",
+      "anchor": "p-dad84c5e-d76c-4cf4-9a54-bf2a98778dca",
+      "dimensions_documented": "779px by 519px",
+      "width_px": 779,
+      "height_px": 519,
+      "aspect_ratio_documented": "1.5:1 (ratio/fractional ratio) 3:2 (nearest common ratio)",
+      "formats_documented": "JPEG or PNG",
+      "shape": "Rectangular",
+      "maximum_weight": null,
+      "notes": [
+        "Featured event plus upcoming-events sidebar; clear engaging main image."
+      ],
+      "discrepancy": "Pixel ratio approximately 1.5010:1; minor rounding relative to 3:2."
+    },
+    {
+      "name": "Featured Series (3)",
+      "anchor": "p-ba0b5947-91d3-4213-9510-d51db6b960f8",
+      "dimensions_documented": "380px by 260px",
+      "width_px": 380,
+      "height_px": 260,
+      "aspect_ratio_documented": "3:2",
+      "formats_documented": "JPEG or PNG",
+      "shape": "Rectangular",
+      "maximum_weight": null,
+      "notes": [
+        "Three related articles/links; choose images that stand out on charcoal-grey background."
+      ],
+      "discrepancy": "Pixel ratio approximately 1.4615:1, differing from 3:2 (1.5:1)."
+    },
+    {
+      "name": "Full-bleed featured article",
+      "anchor": "p-c73a4bd5-3dbc-4ac4-b4ee-2421b7286613",
+      "dimensions_documented": "1920px by 700px",
+      "width_px": 1920,
+      "height_px": 700,
+      "aspect_ratio_documented": "16:9",
+      "formats_documented": "JPEG or PNG",
+      "shape": "Rectangular",
+      "maximum_weight": "1MB",
+      "notes": [
+        "Prominent article on Home Page/flex pages; lower image portion hidden behind text box."
+      ],
+      "discrepancy": "1920/700 = approximately 2.7429:1, conflicting with 16:9 (approximately 1.7778:1)."
+    },
+    {
+      "name": "Full-bleed image",
+      "anchor": "p-2f942d1c-3ee1-4cd7-befc-c713a49f5cb1",
+      "dimensions_documented": "1920px by 717px",
+      "width_px": 1920,
+      "height_px": 717,
+      "aspect_ratio_documented": "16:9",
+      "formats_documented": "JPEG or PNG",
+      "shape": "Rectangular",
+      "maximum_weight": "1MB",
+      "notes": [
+        "Large introduction image; source suggests limiting use, such as at Article introductions."
+      ],
+      "discrepancy": "1920/717 = approximately 2.6778:1, conflicting with 16:9."
+    },
+    {
+      "name": "Full-bleed image hero",
+      "anchor": "p-9bd181f6-0b23-4073-886b-77fa8cdf5ca3",
+      "dimensions_documented": "1920px by 700px",
+      "width_px": 1920,
+      "height_px": 700,
+      "aspect_ratio_documented": "2.21:1 (ratio/fractional ratio), 42:19 (nearest common ration)",
+      "formats_documented": "JPEG or PNG",
+      "shape": "Rectangular",
+      "maximum_weight": "1MB",
+      "notes": [
+        "Main header for most pages."
+      ],
+      "discrepancy": "The earlier reported conflict remains in the live source: 1920/700 is approximately 2.7429:1, while 2.21:1 and 42:19 (approximately 2.2105:1) agree with each other but not the dimensions. Do not silently resolve."
+    },
+    {
+      "name": "Full width image",
+      "anchor": "p-b18edd55-06da-4e28-88d6-a0e2209842e5",
+      "dimensions_documented": "1260px by 711px",
+      "width_px": 1260,
+      "height_px": 711,
+      "aspect_ratio_documented": "16:9",
+      "formats_documented": "JPEG or PNG",
+      "shape": "Rectangular",
+      "maximum_weight": "1MB",
+      "notes": [
+        "Large image introducing/supporting content."
+      ],
+      "discrepancy": "Pixel ratio approximately 1.7722:1, slightly different from 16:9."
+    },
+    {
+      "name": "Full width video",
+      "anchor": "p-c025a212-f3fb-4e0f-9641-f5c698708182",
+      "dimensions_documented": "1270px by 717px",
+      "width_px": 1270,
+      "height_px": 717,
+      "aspect_ratio_documented": "16:9",
+      "formats_documented": "JPEG or PNG",
+      "shape": "Rectangular",
+      "maximum_weight": "1MB (for Image still)",
+      "notes": [
+        "These are image-preview requirements, not video-file requirements. Upload representative clear image; video still must not be blurry."
+      ],
+      "discrepancy": "Pixel ratio approximately 1.7713:1, slightly different from 16:9."
+    },
+    {
+      "name": "Homepage hero",
+      "anchor": "p-7f7d69ea-a4c3-4eaf-b453-0cd62bf6855d",
+      "dimensions_documented": "Variable based on browser dimensions",
+      "width_px": null,
+      "height_px": null,
+      "aspect_ratio_documented": "Variable based on browser dimensions",
+      "formats_documented": "JEPG or PNG",
+      "shape": "Variable",
+      "maximum_weight": "1MB",
+      "notes": [
+        "Required Homepage main header; center stays focal point and sides crop with viewport changes."
+      ],
+      "source_typo": "JEPG, interpreted as JPEG. No fixed export dimensions given."
+    },
+    {
+      "name": "Information list block",
+      "anchor": "p-596bdccc-bc7c-437e-a473-9977972eb22b",
+      "dimensions_documented": "250px by 250px",
+      "width_px": 250,
+      "height_px": 250,
+      "aspect_ratio_documented": "1:1",
+      "formats_documented": "JPEG of PNG",
+      "shape": "Circular",
+      "maximum_weight": null,
+      "notes": [
+        "Description is TBD. Upload square; automatic circle crop."
+      ],
+      "source_typo": "JPEG of PNG, interpreted as JPEG or PNG."
+    },
+    {
+      "name": "Portrait video gallery",
+      "anchor": "p-add3ef81-8665-48b5-9f30-fd60cc221a08",
+      "dimensions_documented": "390px by 600px",
+      "width_px": 390,
+      "height_px": 600,
+      "aspect_ratio_documented": "0.65:1 (ratio/fractional ratio), 13:20 (nearest common ration)",
+      "formats_documented": "JPEG or PNG",
+      "shape": "Rectangular",
+      "maximum_weight": null,
+      "notes": [
+        "Image previews for three-up video arrangement; representative still must be clear, not blurry."
+      ]
+    },
+    {
+      "name": "Quick links blocks",
+      "anchor": "p-393231f2-95b7-40a1-b3cd-dc8e4f852de9",
+      "dimensions_documented": "150px by 150px",
+      "width_px": 150,
+      "height_px": 150,
+      "aspect_ratio_documented": "1:1",
+      "formats_documented": "JEPG or PNG",
+      "shape": "Circular",
+      "maximum_weight": null,
+      "notes": [
+        "Four quick links; square upload automatically crops into circle."
+      ],
+      "source_typo": "JEPG, interpreted as JPEG."
+    },
+    {
+      "name": "Quick links blocks with tabs and images",
+      "anchor": "p-8f84da43-0cbc-46ba-b13d-f81ed51fb6d4",
+      "dimensions_documented": "Size is variable recommend an image of at least 500px wide",
+      "width_px": null,
+      "height_px": null,
+      "recommended_min_width_px": 500,
+      "aspect_ratio_documented": "1.6:1 at the S breakpoint; 5:4 at larger breakpoints",
+      "formats_documented": "JPEG or PNG",
+      "shape": "Rectangular",
+      "maximum_weight": null,
+      "responsive_ratios": {
+        "S": "1.6:1",
+        "larger": "5:4"
+      },
+      "notes": [
+        "Center stays focal point and sides crop. Source prose says medium/larger use a vertical image, small/smaller use a horizontal layout."
+      ],
+      "discrepancy": "Documented larger-breakpoint 5:4 is landscape (width/height 1.25), while prose calls it vertical. Preserve both; do not invert ratio automatically."
+    },
+    {
+      "name": "Quick links blocks with tabs and secondary colours",
+      "anchor": "p-8cae2fdf-b2fc-407f-aa01-d2017c8c5d87",
+      "dimensions_documented": "150px by 150px",
+      "width_px": 150,
+      "height_px": 150,
+      "aspect_ratio_documented": "1:1",
+      "formats_documented": "JEPG or PNG",
+      "shape": "Circular",
+      "maximum_weight": null,
+      "notes": [
+        "Related quick-link sets; square upload automatically crops into circle."
+      ],
+      "source_typo": "JEPG, interpreted as JPEG."
+    },
+    {
+      "name": "Quote Card",
+      "anchor": "p-bcc7ffe3-a390-4cb8-99ac-a7a520020a1e",
+      "dimensions_documented": "720px by 600px",
+      "width_px": 720,
+      "height_px": 600,
+      "aspect_ratio_documented": "1:1 at the S breakpoint; 3:1 at the M breakpoint; 1.2:1 at the L and XL breakpoints.",
+      "formats_documented": "JPEG or PNG",
+      "shape": "Rectangular/Square",
+      "maximum_weight": null,
+      "responsive_ratios": {
+        "S": "1:1",
+        "M": "3:1",
+        "L": "1.2:1",
+        "XL": "1.2:1"
+      },
+      "notes": [
+        "Left/right image-card orientation is selectable. Card partly overlaps image; image changes with viewport. Listed export dimensions match L/XL ratio."
+      ]
+    },
+    {
+      "name": "Related articles (2)",
+      "anchor": "p-919575f5-446b-420e-bb8b-326f6d467f17",
+      "dimensions_documented": "390px by 260px",
+      "width_px": 390,
+      "height_px": 260,
+      "aspect_ratio_documented": "1:1 at the S and M breakpoints; 3:2 at the L and XL breakpoints.",
+      "formats_documented": "JPEG or PNG",
+      "shape": "Square and rectangle",
+      "maximum_weight": null,
+      "responsive_ratios": {
+        "S": "1:1",
+        "M": "1:1",
+        "L": "3:2",
+        "XL": "3:2"
+      },
+      "notes": [
+        "Two related articles/funds; rectangle crops to square on smaller screens. Choose subject that tolerates crop."
+      ]
+    },
+    {
+      "name": "Section header with image",
+      "anchor": "p-ae39b133-d506-4220-aaf7-38b882b40e6d",
+      "dimensions_documented": "600px by 450px",
+      "width_px": 600,
+      "height_px": 450,
+      "aspect_ratio_documented": "0.8:1",
+      "formats_documented": "JPEG or PNG",
+      "shape": "Rectangular",
+      "maximum_weight": null,
+      "notes": [
+        "Introduces page-body content section; optional call to action."
+      ],
+      "discrepancy": "600/450 = 1.3333:1 (4:3), conflicting with 0.8:1."
+    },
+    {
+      "name": "Social Feed",
+      "anchor": "p-bad7eed6-2468-4425-90fb-ed139a366691",
+      "dimensions_documented": "400px by 600px",
+      "width_px": 400,
+      "height_px": 600,
+      "aspect_ratio_documented": "4:5",
+      "formats_documented": "JPEG or PNG",
+      "shape": "Square/Rectangular",
+      "maximum_weight": null,
+      "notes": [
+        "Manually populated social-post grid; use same photo as social post. Source says image size rotates."
+      ],
+      "discrepancy": "400/600 = 0.6667:1 (2:3), conflicting with 4:5 (0.8:1)."
+    },
+    {
+      "name": "Split screen hero",
+      "anchor": "p-0ceedec7-047e-4f9b-9c71-332ac890e8e8",
+      "dimensions_documented": "Variable based on browser dimensions (960px by 700px)",
+      "width_px": null,
+      "height_px": null,
+      "reference_dimensions_px": [
+        960,
+        700
+      ],
+      "aspect_ratio_documented": "Variable based on browser dimensions",
+      "formats_documented": "JEPG or PNG",
+      "shape": "Variable",
+      "maximum_weight": "1MB",
+      "notes": [
+        "Main header for specific page content types; center remains focal point and sides crop. Parenthetical 960×700 is a reference within explicitly variable sizing."
+      ],
+      "source_typo": "JEPG, interpreted as JPEG."
+    },
+    {
+      "name": "Static content block (3)",
+      "anchor": "p-69d58f19-bf51-4b30-9486-eaee5948771e",
+      "dimensions_documented": "393px by 253px",
+      "width_px": 393,
+      "height_px": 253,
+      "aspect_ratio_documented": "1.43:1",
+      "formats_documented": "JPEG or PNG",
+      "shape": "Rectangular",
+      "maximum_weight": null,
+      "notes": [
+        "Static images/text without links."
+      ],
+      "discrepancy": "393/253 = approximately 1.5534:1, conflicting with 1.43:1."
+    }
+  ]
+}

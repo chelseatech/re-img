@@ -1,11 +1,29 @@
+import guide from './uottawa-specifications.json' with { type: 'json' };
+
 export const PRESET_STORAGE_KEY = 'web-image-prep-presets';
-export const defaults = [
+export const legacyDefaults = [
   { name: 'Article image', width: 830, height: 553, cap: 1000, circle: false, uottawa: true, format: 'jpeg' },
   { name: 'Article / event card', width: 390, height: 260, cap: 0, circle: false, uottawa: true, format: 'jpeg' },
   { name: 'Author portrait', width: 80, height: 80, cap: 200, circle: true, uottawa: true, format: 'jpeg' },
   { name: 'Circular card', width: 200, height: 200, cap: 0, circle: true, uottawa: true, format: 'jpeg' },
   { name: 'Custom client profile', width: 1200, height: 800, cap: 0, circle: false, uottawa: false, format: 'jpeg' },
 ];
+
+export const uottawaPresets = guide.components.map(component => {
+  const weight = /^(\d+(?:\.\d+)?)\s*(KB|MB)/i.exec(component.maximum_weight ?? '');
+  return { id: `uottawa:${component.anchor}`, name: component.name,
+    width: component.width_px ?? null, height: component.height_px ?? null,
+    cap: weight ? Number(weight[1]) * (weight[2].toUpperCase() === 'MB' ? 1000 : 1) : 0,
+    circle: component.shape === 'Circular', uottawa: true, format: 'jpeg',
+    variants: component.variants ?? null, variant: '',
+    verification_needed: Boolean(component.discrepancy || component.ambiguity),
+    source: { ...component, url: `${guide.source.canonical_url}#${component.anchor}`,
+      retrieved_date: guide.source.retrieved_date, revision_date: guide.source.revision_or_publication_date },
+  };
+});
+// Keep the original five slots so older edited profiles and named presets can
+// migrate without being mistaken for newly added official component profiles.
+export const defaults = [...legacyDefaults, ...uottawaPresets];
 
 function validSettings(p) {
   return p && Number.isInteger(p.width) && p.width > 0 && p.width <= 10000
@@ -20,19 +38,28 @@ function safeFormat(format, uottawa) {
   return ['jpeg', 'png', 'webp'].includes(format) && !(uottawa && format === 'webp') ? format : 'jpeg';
 }
 
-// Extend the original array in the original key. The first five slots retain
-// their trusted names/policies, including when loading the legacy format-less data.
+// Official profiles use source-derived IDs. Saved metadata never controls their
+// names, provenance, conflict flags or format policy; those come from the guide.
 export function loadPresets(storage) {
   const presets = structuredClone(defaults);
   try {
     const saved = JSON.parse((storage ?? globalThis.localStorage).getItem(PRESET_STORAGE_KEY));
-    if (!Array.isArray(saved) || saved.length < defaults.length) return presets;
-    defaults.forEach((base, i) => {
+    if (!Array.isArray(saved) || saved.length < legacyDefaults.length) return presets;
+    legacyDefaults.forEach((base, i) => {
       const p = saved[i];
       if (validSettings(p)) presets[i] = { ...base, width: p.width, height: p.height, cap: p.cap,
         circle: Boolean(p.circle), format: safeFormat(p.format, base.uottawa) };
     });
-    for (const p of saved.slice(defaults.length)) {
+    for (const p of saved.slice(legacyDefaults.length)) {
+      const index = p?.id ? presets.findIndex(base => base.id === p.id) : -1;
+      if (index >= legacyDefaults.length) {
+        const base = presets[index];
+        const variant = base.variants?.find(v => v.name === p.variant);
+        if (validSettings(p) && (!base.variants || variant)) presets[index] = { ...base,
+          width: p.width, height: p.height, cap: p.cap, circle: Boolean(p.circle),
+          format: safeFormat(p.format, true), variant: variant?.name ?? '' };
+        continue;
+      }
       if (!validSettings(p) || !validName(p.name) || presets.some(existing => existing.name.toLowerCase() === p.name.trim().toLowerCase())) continue;
       presets.push({ name: p.name.trim(), width: p.width, height: p.height, cap: p.cap,
         circle: Boolean(p.circle), uottawa: false, format: safeFormat(p.format, false) });

@@ -1,5 +1,7 @@
 # Create preset validation — Lappy, 2026-10-10
 
+This is the initial report for `2ddbc2e`. See [UOTTAWA-VALIDATION.md](UOTTAWA-VALIDATION.md) for the subsequently authorized 34-component catalogue and Windows CI scope. Final run results and commit-bound BUILD-INFO artifacts supersede the pending/native-build status described here.
+
 Baseline: `fix/icc-colour-import`, commit `234b1eccc235cc72ac3631a55f8faa1e6510a746`, application version 0.1.2. Feature branch: `feat/create-preset`. No repository `AGENTS.md`, `.agents` instructions or repository skills were present. The README and Windows workflow supplied the build instructions.
 
 ## Changes

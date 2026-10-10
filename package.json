@@ -1,6 +1,6 @@
 {
   "name": "web-image-prep", "version": "0.1.2", "private": true, "type": "module",
-  "scripts": { "dev": "vite --host 127.0.0.1", "build": "vite build", "check": "node --check src/main.js && node --check src/presets.js && node --test tests/*.test.js", "icons": "tauri icon assets/app-icon.svg --output src-tauri/icons", "tauri": "tauri" },
+  "scripts": { "dev": "vite --host 127.0.0.1", "build": "vite build", "check": "node --check src/main.js && node --check src/presets.js && node --check .github/scripts/preset-smoke.mjs && node --test tests/crop.test.js tests/presets.test.js", "icons": "tauri icon assets/app-icon.svg --output src-tauri/icons", "tauri": "tauri" },
   "dependencies": { "@tauri-apps/api": "^2.0.0", "@tauri-apps/plugin-dialog": "^2.0.0" },
   "devDependencies": { "@tauri-apps/cli": "^2.0.0", "vite": "^6.0.0" }
 }
