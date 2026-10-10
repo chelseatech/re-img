@@ -3,16 +3,9 @@ import { invoke } from '@tauri-apps/api/core';
 import { getCurrentWebview } from '@tauri-apps/api/webview';
 import { open } from '@tauri-apps/plugin-dialog';
 import { cropRect, outputSize } from './crop.js';
+import { loadPresets, persistPresets, createPreset, restoreStarterPresets } from './presets.js';
 
-const defaults = [
-  { name: 'Article image', width: 830, height: 553, cap: 1000, circle: false, uottawa: true },
-  { name: 'Article / event card', width: 390, height: 260, cap: 0, circle: false, uottawa: true },
-  { name: 'Author portrait', width: 80, height: 80, cap: 200, circle: true, uottawa: true },
-  { name: 'Circular card', width: 200, height: 200, cap: 0, circle: true, uottawa: true },
-  { name: 'Custom client profile', width: 1200, height: 800, cap: 0, circle: false, uottawa: false },
-];
-let presets = structuredClone(defaults);
-try { const saved = JSON.parse(localStorage.getItem('web-image-prep-presets')); if (Array.isArray(saved) && saved.length === 5 && saved.every(p => Number.isInteger(p.width) && p.width > 0 && p.width <= 10000 && Number.isInteger(p.height) && p.height > 0 && p.height <= 10000 && Number.isFinite(p.cap) && p.cap >= 0 && p.cap <= 100000)) presets = saved.map((p,i) => ({...defaults[i], width:p.width,height:p.height,cap:p.cap,circle:Boolean(p.circle)})); } catch { /* Use verified defaults. */ }
+let presets = loadPresets();
 let items = [], selected = null, busy = false, directory = '', profileIndex = 0;
 let previewImage = null, view = null, pointer = null;
 const $ = id => document.getElementById(id);
@@ -32,7 +25,7 @@ document.querySelector('#app').innerHTML = `
         <p id="crop-warning" class="warning" aria-live="polite"></p>
       </div>
       <div class="settings panel"><div class="section-heading"><h2>Prepare your export</h2><span id="profile-tag" class="tag">uOttawa</span></div>
-        <div class="controls"><label>Website profile<select id="profile"></select></label><label>File format<select id="format"><option value="jpeg">JPEG · photographs</option><option value="png">PNG · transparency / graphics</option><option value="webp">WebP · lossless (custom only)</option></select></label></div>
+        <div class="controls"><div class="profile-control"><label for="profile">Website profile</label><div class="profile-picker"><select id="profile"></select><button id="create-preset" class="secondary" type="button">Create preset</button></div></div><label>File format<select id="format"><option value="jpeg">JPEG · photographs</option><option value="png">PNG · transparency / graphics</option><option value="webp">WebP · lossless (custom only)</option></select></label></div>
         <div class="controls dimensions"><label>Width · px<input id="width" type="number" min="1" max="10000"></label><label>Height · px<input id="height" type="number" min="1" max="10000"></label><label>Maximum · KB<input id="cap" type="number" min="0" max="100000" step="1"></label><label class="check"><input id="circle" type="checkbox"> Circle preview</label></div>
         <div class="controls"><label id="quality-label">JPEG quality ceiling <input id="quality" type="range" min="1" max="100" value="86"><span id="quality-value">86</span></label><label>JPEG transparency background<select id="background"><option value="">Require a choice if transparent</option><option value="white">White</option><option value="black">Black</option><option value="custom">Custom colour</option></select></label><label id="custom-bg-label" hidden>Background colour<input id="custom-bg" type="color" value="#ffffff"></label></div>
         <label class="check"><input id="smaller" type="checkbox"> Allow smaller derivatives when a source cannot fill the requested size</label>
@@ -42,7 +35,22 @@ document.querySelector('#app').innerHTML = `
     </section>
   </main>
   <footer><div><button id="folder" class="secondary">Choose export folder</button><span id="folder-name">No folder selected</span></div><div><span id="batch-status" role="status">Ready when you are</span><button id="export" class="primary" disabled>Export batch →</button></div></footer>
-  <div id="notice" role="alert" hidden></div>`;
+  <div id="notice" role="alert" hidden></div>
+  <dialog id="preset-dialog" aria-labelledby="preset-title" aria-describedby="preset-description">
+    <form id="preset-form">
+      <h2 id="preset-title">Create preset</h2>
+      <p id="preset-description">Save settings you can choose again for future images. These are custom settings; uOttawa profiles keep their own format rules.</p>
+      <label for="preset-name">Preset name</label><input id="preset-name" type="text" required maxlength="80" placeholder="e.g. Homepage banner" autocomplete="off">
+      <div class="controls"><label>Width in pixels<input id="preset-width" type="number" min="1" max="10000" step="1" required></label><label>Height in pixels<input id="preset-height" type="number" min="1" max="10000" step="1" required></label></div>
+      <p class="field-help">Use whole pixels, from 1 to 10,000. The image will be cropped to this shape without stretching.</p>
+      <label>Output format<select id="preset-format"><option value="jpeg">JPEG · photographs</option><option value="png">PNG · transparency / graphics</option><option value="webp">WebP · lossless</option></select></label>
+      <label class="target-label">File-size target in KB (optional)<input id="preset-cap" type="number" min="0" max="100000" step="1" placeholder="Leave blank for no limit" aria-describedby="preset-size-help"></label>
+      <p id="preset-size-help" class="field-help">Blank or 0 means no limit. 1 KB = 1,000 bytes. JPEG quality may be lowered to meet the target. PNG and WebP are lossless; if the target cannot be met, export stops and explains why.</p>
+      <p class="field-help">Originals stay untouched. Small sources are blocked by default; images are never enlarged.</p>
+      <p id="preset-error" class="form-error" role="alert" hidden></p>
+      <div class="dialog-actions"><button id="cancel-preset" class="secondary" type="button">Cancel</button><button class="primary" type="submit">Save preset</button></div>
+    </form>
+  </dialog>`;
 
 function notify(message) { $('notice').textContent = message; $('notice').hidden = !message; }
 function preset() { return presets[profileIndex]; }
@@ -56,11 +64,22 @@ function validateControls() {
   if (!Number.isInteger(Number($('width').value)) || !Number.isInteger(Number($('height').value))) throw new Error('Dimensions must be whole pixels.');
 }
 function savePreset() {
-  try { validateControls(); Object.assign(preset(), {width:Number($('width').value),height:Number($('height').value),cap:Number($('cap').value),circle:$('circle').checked}); localStorage.setItem('web-image-prep-presets', JSON.stringify(presets)); notify(''); } catch (e) { notify(e.message); }
+  try {
+    validateControls();
+    const updated = presets.map((p, i) => i === profileIndex ? {...p, width:Number($('width').value),height:Number($('height').value),cap:Number($('cap').value),circle:$('circle').checked,format:$('format').value} : p);
+    persistPresets(localStorage, updated); presets = updated; notify('');
+  } catch (e) { notify(e.message); }
   draw();
+}
+function renderProfiles() {
+  $('profile').replaceChildren();
+  presets.forEach((p,i) => { const option=document.createElement('option'); option.value=i; option.textContent=p.name; $('profile').append(option); });
+  $('profile').value = String(profileIndex);
 }
 function applyPreset() {
   const p = preset(); $('width').value = p.width; $('height').value = p.height; $('cap').value = p.cap; $('circle').checked = p.circle;
+  $('format').value = p.format;
+  $('smaller').checked = false;
   $('profile-tag').textContent = p.uottawa ? 'uOttawa' : 'Custom';
   $('format').querySelector('[value="webp"]').disabled = p.uottawa;
   if (p.uottawa && $('format').value === 'webp') $('format').value = 'jpeg';
@@ -69,7 +88,7 @@ function applyPreset() {
 function formatChange() { $('quality-label').hidden = $('format').value !== 'jpeg'; $('background').disabled = $('format').value !== 'jpeg'; $('custom-bg-label').hidden = $('format').value !== 'jpeg' || $('background').value !== 'custom'; draw(); }
 function updateActions() {
   $('export').disabled = busy || !directory || !items.some(i => i.id !== null);
-  for (const id of ['add','clear','folder','profile','format','width','height','cap','circle','quality','background','custom-bg','smaller','zoom','reset','restore']) $(id).disabled = busy;
+  for (const id of ['add','clear','folder','profile','create-preset','format','width','height','cap','circle','quality','background','custom-bg','smaller','zoom','reset','restore']) $(id).disabled = busy;
   $('background').disabled = busy || $('format').value !== 'jpeg';
 }
 function renderFiles() {
@@ -149,15 +168,41 @@ $('zoom').oninput = () => { if(selected) {selected.zoom=Number($('zoom').value);
 $('quality').oninput = () => { $('quality-value').textContent=$('quality').value; };
 $('profile').onchange = () => {profileIndex=Number($('profile').value);applyPreset();};
 for (const id of ['width','height','cap','circle']) $(id).onchange=savePreset;
-for (const id of ['format','background']) $(id).onchange=formatChange;
+$('format').onchange = () => { formatChange(); savePreset(); };
+$('background').onchange = formatChange;
 $('smaller').onchange=draw;
-$('restore').onclick = () => {presets=structuredClone(defaults);localStorage.removeItem('web-image-prep-presets');applyPreset();};
+$('restore').onclick = () => {
+  try { const restored = restoreStarterPresets(presets); persistPresets(localStorage, restored); presets=restored; applyPreset(); notify('Starter profiles restored. Your created presets are kept.'); }
+  catch (e) { notify(e.message); }
+};
+$('create-preset').onclick = () => {
+  if (busy) return;
+  $('preset-form').reset();
+  $('preset-width').value = $('width').checkValidity() && $('width').value !== '' ? $('width').value : preset().width;
+  $('preset-height').value = $('height').checkValidity() && $('height').value !== '' ? $('height').value : preset().height;
+  $('preset-format').value = $('format').value;
+  $('preset-cap').value = $('cap').checkValidity() && Number($('cap').value) > 0 ? $('cap').value : '';
+  $('preset-error').hidden = true; notify('');
+  $('preset-dialog').showModal(); $('preset-name').focus();
+};
+$('cancel-preset').onclick = () => $('preset-dialog').close();
+$('preset-dialog').onclose = () => $('create-preset').focus();
+$('preset-form').onsubmit = event => {
+  event.preventDefault();
+  if (busy) return;
+  try {
+    const created = createPreset({ name:$('preset-name').value,width:$('preset-width').value,height:$('preset-height').value,format:$('preset-format').value,cap:$('preset-cap').value }, presets);
+    const updated = [...presets, created]; persistPresets(localStorage, updated);
+    presets = updated; profileIndex = presets.length - 1; renderProfiles(); applyPreset();
+    $('preset-dialog').close(); notify(`Preset “${created.name}” saved on this device and selected. Choose it again from Website profile.`);
+  } catch (e) { $('preset-error').textContent=e.message; $('preset-error').hidden=false; }
+};
 const canvas=$('canvas');
 canvas.onpointerdown = e => { if (busy || !selected || !view) return; pointer={x:e.clientX,y:e.clientY,cx:selected.cx,cy:selected.cy}; canvas.setPointerCapture(e.pointerId); };
 canvas.onpointermove = e => { if(!pointer || !view || busy) return; const rect=canvas.getBoundingClientRect(); selected.cx=Math.max(0,Math.min(1,pointer.cx+(e.clientX-pointer.x)*canvas.width/rect.width/view.scale/selected.width)); selected.cy=Math.max(0,Math.min(1,pointer.cy+(e.clientY-pointer.y)*canvas.height/rect.height/view.scale/selected.height)); draw(); };
 canvas.onpointerup = canvas.onpointercancel = () => {pointer=null;};
 canvas.onkeydown = e => { if (!selected || busy || !['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)) return; e.preventDefault(); const delta=e.shiftKey?0.05:0.01; selected.cx=Math.max(0,Math.min(1,selected.cx+(e.key==='ArrowRight'?delta:e.key==='ArrowLeft'?-delta:0))); selected.cy=Math.max(0,Math.min(1,selected.cy+(e.key==='ArrowDown'?delta:e.key==='ArrowUp'?-delta:0))); draw(); };
-presets.forEach((p,i)=>{const option=document.createElement('option');option.value=i;option.textContent=p.name;$('profile').append(option);});
+renderProfiles();
 applyPreset(); renderFiles();
 getCurrentWebview().onDragDropEvent(event => {
   if(event.payload.type==='drop') { $('add').classList.remove('dragging'); void addPaths(event.payload.paths); }

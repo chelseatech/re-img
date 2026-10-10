@@ -26,10 +26,20 @@ Use Node 22 LTS or a current supported LTS and Rust 1.88 or newer (required by t
 ## First-use workflow
 
 1. Add images with the Windows file picker or drop them into the native window. Up to 100 files; input resource limits are 100 MB / 64 megapixels per file, with a 256 MiB decode allocation limit.
-2. Choose a profile. Width, height and maximum size are editable and saved locally for the next launch. Crop positions and zoom are per image for the current session. Batch export uses the current profile for all imported images.
+2. Choose a profile, or click **Create preset** beside the Website profile selector to save your own named settings. Width, height, maximum size and format are saved locally for the next launch. Crop positions and zoom are per image for the current session. Batch export uses the current profile for all imported images.
 3. Drag the crop or use arrow keys (Shift moves faster). Zoom tightens the crop. Circle overlays are guides only; files remain square when using the square portrait/card profiles.
 4. Choose JPEG for photographs, PNG for transparency or graphics. Custom profiles can export lossless WebP. The image crate does not offer lossy WebP; this prototype does not present a misleading lossy quality control. libwebp would be a separate future dependency if lossy WebP is needed.
 5. Choose an existing output folder and export. Each file shows processing, success or a specific error. Hover its result for the destination or full error.
+
+## Create a reusable preset
+
+1. Under **Prepare your export**, click **Create preset** beside **Website profile**. Scroll down to the export settings if needed.
+2. Enter a unique name, such as **Homepage banner**, and the desired width and height in whole pixels (1 to 10,000). The form starts with the current profile's dimensions, format and size target.
+3. Choose JPEG for photographs, PNG for transparency/graphics, or lossless WebP for a custom preset.
+4. Optionally enter a file-size target in decimal KB. Blank or 0 means no limit. JPEG quality may be lowered to meet it; PNG/WebP remain lossless, and an impossible target produces an export error instead of silently shrinking the image.
+5. Click **Save preset**. The new preset is selected immediately and appears in **Website profile** for future sessions. Edits to its dimensions, target, circle preview or format are saved automatically. Cancel or Escape closes the form without saving.
+
+Presets stay on this device using the app's existing `web-image-prep-presets` localStorage key. Existing five-profile edits are retained. **Restore starter profiles** resets the original five profiles and keeps your created presets. Duplicate names are rejected, and a storage failure keeps the form open with an explanation. New presets are custom profiles; the four uOttawa presets still permit JPEG/PNG only. Presets never authorize upscaling, and choosing a profile resets the optional permission to export smaller derivatives. Originals and existing exports retain the same read-only/unique-filename protection.
 
 ## Starter presets
 
