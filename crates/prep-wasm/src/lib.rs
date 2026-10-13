@@ -11,15 +11,14 @@ pub fn execute(bytes: &[u8], request: &str) -> Result<(serde_json::Value, Vec<u8
         let bytes = if req.mode == "detail" { prep_core::encode(&img,"png",100)? } else { prep_core::thumbnail(&img)? };
         return Ok((json!({"width":img.width(),"height":img.height(),"alpha":prep_core::has_alpha(&img)}), bytes));
     }
+    if req.mode != "export" { return Err("Unknown operation".into()); }
     let mut options = req.options;
-    if req.fit == "contain" {
-        let scale = (options.width as f64 / img.width() as f64).min(options.height as f64 / img.height() as f64).min(1.0);
-        options.width = (img.width() as f64 * scale).floor().max(1.0) as u32;
-        options.height = (img.height() as f64 * scale).floor().max(1.0) as u32;
-        options.zoom = 1.0; options.center_x = 0.5; options.center_y = 0.5;
-    } else if req.fit != "crop" { return Err("Unknown fit mode".into()); }
     options.uottawa = false;
-    let (out, warning) = prep_core::prepare(&img, &options)?;
+    let (out, warning) = match req.fit.as_str() {
+        "crop" => prep_core::prepare(&img,&options)?,
+        "contain" => prep_core::prepare_contain(&img,&options)?,
+        _ => return Err("Unknown fit mode".into()),
+    };
     let (data, quality) = prep_core::fit_bytes(&out, &options)?;
     Ok((json!({"width":out.width(),"height":out.height(),"quality":quality,"warning":warning}), data))
 }

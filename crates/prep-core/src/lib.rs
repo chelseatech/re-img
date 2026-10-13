@@ -136,6 +136,25 @@ pub fn prepare(img: &DynamicImage, o: &Options) -> Result<(DynamicImage, Option<
     Ok((out, small.then(|| format!("Smaller derivative {}×{} exported without upscaling.", w, h))))
 }
 
+/// Fit the complete source inside a box, preserving every edge and never enlarging.
+pub fn prepare_contain(img: &DynamicImage, o: &Options) -> Result<(DynamicImage, Option<String>), String> {
+    validate(o)?;
+    let scale = (o.width as f64 / img.width() as f64).min(o.height as f64 / img.height() as f64).min(1.0);
+    let w = (img.width() as f64 * scale).floor().max(1.0) as u32;
+    let h = (img.height() as f64 * scale).floor().max(1.0) as u32;
+    let mut out = img.resize_exact(w,h,image::imageops::FilterType::Lanczos3);
+    if o.format == "jpeg" && has_alpha(&out) {
+        let bg=o.background.ok_or("Transparency needs an explicit JPEG background. Choose PNG to preserve it.")?;
+        let rgba=out.to_rgba8();
+        out=DynamicImage::ImageRgb8(image::RgbImage::from_fn(w,h,|x,y|{
+            let p=rgba.get_pixel(x,y);let a=p[3] as u32;
+            image::Rgb(std::array::from_fn(|i|((p[i] as u32*a+bg[i] as u32*(255-a)+127)/255) as u8))
+        }));
+    }
+    let warning=(scale==1.0 && (w<o.width || h<o.height)).then(||format!("Fit inside: {}x{} exported without upscaling.",w,h));
+    Ok((out,warning))
+}
+
 pub fn encode(img: &DynamicImage, format: &str, q: u8) -> Result<Vec<u8>, String> {
     let mut bytes = Vec::new();
     let srgb = ColorProfile::new_srgb().encode().map_err(|e| format!("Cannot encode sRGB profile: {e}"))?;
@@ -208,6 +227,12 @@ mod tests {
     #[test] fn collision_keeps_original_bytes() { let dir = std::env::temp_dir().join(format!("prep-core-test-{}-{}", std::process::id(), std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos())); fs::create_dir(&dir).unwrap(); let a = write_unique(&dir, "photo-web-80x80", "png", b"original").unwrap(); let b = write_unique(&dir, "photo-web-80x80", "png", b"derivative").unwrap(); assert_ne!(a, b); assert_eq!(fs::read(&a).unwrap(), b"original"); assert_eq!(fs::read(&b).unwrap(), b"derivative"); fs::remove_file(a).unwrap(); fs::remove_file(b).unwrap(); fs::remove_dir(dir).unwrap(); }
     #[test] fn derivative_roundtrip_and_metadata_removed() { let img = DynamicImage::new_rgb8(100, 100); for format in ["jpeg", "png", "webp"] { let data = encode(&img, format, 85).unwrap(); let mut decoder = ImageReader::new(Cursor::new(data)).with_guessed_format().unwrap().into_decoder().unwrap(); assert!(decoder.exif_metadata().unwrap().is_none()); let profile = ColorProfile::new_from_slice(&decoder.icc_profile().unwrap().unwrap()).unwrap(); assert_eq!(profile.color_space, DataColorSpace::Rgb); assert!(profile.description.is_some()); } }
 
+    #[test] fn contain_keeps_complete_source_and_never_enlarges() {
+        let img=DynamicImage::ImageRgba8(image::RgbaImage::from_fn(3,2,|x,y|image::Rgba([(x+y*3) as u8,70,90,80])));
+        let mut o=options();o.width=1600;o.height=900;
+        let (out,warning)=prepare_contain(&img,&o).unwrap();assert_eq!(out.to_rgba8(),img.to_rgba8());assert!(warning.is_some());
+        o.width=0;assert!(prepare_contain(&img,&o).is_err());
+    }
     fn fixture_dir() -> PathBuf {
         let dir = std::env::temp_dir().join(format!("prep-icc-{}-{}", std::process::id(), std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos()));
         fs::create_dir(&dir).unwrap(); dir
