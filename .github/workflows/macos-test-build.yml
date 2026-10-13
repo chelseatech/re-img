@@ -99,7 +99,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
-          name: web-image-prep-macos-${{ matrix.label }}-${{ github.sha }}
+          name: re-image-macos-${{ matrix.label }}-${{ github.sha }}
           path: macos-artifact/*
           if-no-files-found: ignore
           retention-days: 3

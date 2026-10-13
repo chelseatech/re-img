@@ -5,7 +5,7 @@ test "$(uname -s)" = Darwin
 : "${MAC_TARGET:?}" "${MAC_ARCHITECTURE:?}" "${MAC_BUILD_LABEL:?}" "${RUNNER_TEMP:?}" "${GITHUB_WORKSPACE:?}"
 
 bundle="$CARGO_TARGET_DIR/$MAC_TARGET/release/bundle"
-app="$bundle/macos/Web image prep.app"
+app="$bundle/macos/re-image.app"
 test -d "$app"
 executable=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$app/Contents/Info.plist")
 binary="$app/Contents/MacOS/$executable"
@@ -20,13 +20,13 @@ hdiutil verify "$dmg"
 
 output="$GITHUB_WORKSPACE/macos-artifact"
 mkdir -p "$output"
-name="web-image-prep-0.1.2-macos-$MAC_BUILD_LABEL-unsigned-test"
+name="re-image-0.1.2-macos-$MAC_BUILD_LABEL-unsigned-test"
 cp "$dmg" "$output/$name.dmg"
 ditto -c -k --sequesterRsrc --keepParent "$app" "$output/$name-app.zip"
 mountpoint=$(mktemp -d "$RUNNER_TEMP/web-image-prep-dmg.XXXXXX")
 trap 'hdiutil detach "$mountpoint" >/dev/null 2>&1 || true' EXIT
 hdiutil attach -readonly -nobrowse -mountpoint "$mountpoint" "$dmg"
-mounted="$mountpoint/Web image prep.app/Contents/MacOS/$executable"
+mounted="$mountpoint/re-image.app/Contents/MacOS/$executable"
 test -x "$mounted"
 test "$(lipo -archs "$mounted")" = "$MAC_ARCHITECTURE"
 cmp "$mounted" "$binary"
@@ -59,7 +59,7 @@ record={'commit':os.environ['GITHUB_SHA'],'target':os.environ['MAC_TARGET'],'arc
  'dmg_verified':True,'mounted_app_matches':True,'distribution':'unsigned tester package','sha256':hashes,
  'not_tested':['Downloaded-file Gatekeeper acceptance','interactive file picker/drop/crop/export','VoiceOver','different Mac hardware/OS versions']}
 (output/'VERIFICATION.json').write_text(json.dumps(record,indent=2)+'\n')
-(output/'READ-ME-FIRST.txt').write_text('Web image prep 0.1.2 macOS tester build\n\n'+
+(output/'READ-ME-FIRST.txt').write_text('re-image 0.1.2 macOS tester build\n\n'+
  'Choose the package matching Apple Silicon or Intel. The DMG contains the app; the ZIP contains the same .app bundle. Rust is not required to run it.\n\n'+
  'This is an unsigned test package. macOS may block a browser-downloaded copy.\n\n'+
  'It preserves the existing desktop interface and local-only image engine. See VERIFICATION.json for exactly what passed and what remains untested.\n'+

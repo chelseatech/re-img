@@ -11,7 +11,7 @@ let previewImage = null, view = null, pointer = null;
 const $ = id => document.getElementById(id);
 const bytes = n => n >= 1000000 ? `${(n / 1000000).toFixed(2)} MB` : `${(n / 1000).toFixed(1)} KB`;
 document.querySelector('#app').innerHTML = `
-  <header><div><span class="mark">W</span><div><p class="creator-credit">Created by Ryan O’Connor</p><h1>Web image prep</h1><p>Small files. Sharp images. Ready for the web.</p></div></div><span class="privacy">● Local processing only</span></header>
+  <header><div><span class="mark">W</span><div><p class="creator-credit">Created by Ryan O’Connor</p><h1>re-image</h1><p>Small files. Sharp images. Ready for the web.</p></div></div><span class="privacy">● Local processing only</span></header>
   <main>
     <aside class="queue panel"><div class="section-heading"><h2>Your images <span id="count">0</span></h2><button id="clear" class="text-button">Clear</button></div>
       <button id="add" class="drop"><span class="plus">＋</span><strong>Add images</strong><span>or drop files into this window</span><small>JPEG · PNG · WebP</small></button>

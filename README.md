@@ -1,4 +1,4 @@
-# Web image prep
+# re-image
 
 Windows desktop image-preparation prototype. Tauri 2 shell, vanilla JavaScript/Vite interface, Rust image-processing core. Version 0.1.2 hardens ICC colour conversion and malformed metadata handling. The Create preset feature branch adds reusable named custom settings and all 34 official uOttawa image-component presets. See [PRESET-VALIDATION.md](PRESET-VALIDATION.md) for current feature checks and Windows build status; [VALIDATION.md](VALIDATION.md) records the ICC baseline checks.
 

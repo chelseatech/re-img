@@ -1,6 +1,6 @@
 {
-  "$schema": "https://schema.tauri.app/config/2", "productName": "Web image prep", "version": "0.1.2", "identifier": "ca.ryan.webimageprep",
+  "$schema": "https://schema.tauri.app/config/2", "productName": "re-image", "version": "0.1.2", "identifier": "ca.ryan.webimageprep",
   "build": { "beforeDevCommand": "npm run dev", "devUrl": "http://127.0.0.1:5173", "beforeBuildCommand": "npm run build", "frontendDist": "../dist" },
-  "app": { "windows": [{ "label": "main", "title": "Web image prep", "width": 1180, "height": 820, "minWidth": 900, "minHeight": 660, "dragDropEnabled": true }], "security": { "csp": "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; connect-src ipc: http://ipc.localhost; script-src 'self'", "capabilities": ["main"] } },
+  "app": { "windows": [{ "label": "main", "title": "re-image", "width": 1180, "height": 820, "minWidth": 900, "minHeight": 660, "dragDropEnabled": true }], "security": { "csp": "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; connect-src ipc: http://ipc.localhost; script-src 'self'", "capabilities": ["main"] } },
   "bundle": { "active": false }
 }
