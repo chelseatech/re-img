@@ -1,6 +1,7 @@
 {
   "bundle": {
     "active": true,
-    "targets": ["app", "dmg"]
+    "targets": ["app", "dmg"],
+    "icon": ["icons/icon.icns"]
   }
 }

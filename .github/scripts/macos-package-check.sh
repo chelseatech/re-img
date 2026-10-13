@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+set -x
 test "$(uname -s)" = Darwin
 : "${MAC_TARGET:?}" "${MAC_ARCHITECTURE:?}" "${MAC_BUILD_LABEL:?}" "${RUNNER_TEMP:?}" "${GITHUB_WORKSPACE:?}"
 
