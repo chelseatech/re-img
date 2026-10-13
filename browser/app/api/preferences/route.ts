@@ -11,7 +11,7 @@ export async function GET(){
 export async function PUT(req:Request){
   const user=await getChatGPTUser(); if(!user)return response({error:'Sign in to sync presets.'},401);
   if(req.headers.get('origin')!==new URL(req.url).origin)return response({error:'Invalid origin.'},403);
-  const text=await req.text();if(text.length>50000)return response({error:'Settings too large.'},413);
+  const text=await req.text();if(text.length>100000)return response({error:'Settings too large.'},413);
   try{
     const body=JSON.parse(text),payload=cleanPayload(body),updatedAt=new Date().toISOString();
     const row=body.revision===0

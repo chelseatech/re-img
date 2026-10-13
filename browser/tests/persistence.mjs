@@ -1,4 +1,4 @@
-import assert from 'node:assert/strict';import {starters} from '../lib/preferences.mjs';
+import assert from 'node:assert/strict';import {starters,mergePresets} from '../lib/preferences.mjs';
 const origin=process.argv[2]??'http://127.0.0.1:5180';
 const prefix=`qa-${Date.now()}`;
 async function req(user,method='GET',body,extra={}){const r=await fetch(`${origin}/api/preferences`,{method,headers:{Origin:origin,'Content-Type':'application/json',...(user?{'oai-authenticated-user-id':`${prefix}-${user}`,'oai-authenticated-user-email':`${user}@sites.test`}:{}),...extra},body:body?JSON.stringify(body):undefined});return {status:r.status,data:await r.json()};}
@@ -15,5 +15,17 @@ assert.equal((await req('b','PUT',payload)).data.revision,1);
 assert.equal((await req('a')).data.presets[0].width,333);
 assert.equal((await req('b')).data.presets[0].width,1600);
 assert.equal((await req('a','PUT',{...payload,userId:`${prefix}-b`})).status,400);
-assert.equal((await req('a','PUT',payload,{Origin:'https://other.example'})).status,403);
-console.log('PASS: real local D1 persistence, two-user isolation, anonymous rejection, revision conflicts, user-key injection and origin protection');
+console.log('PASS: real local D1 persistence, two-user isolation, anonymous rejection, revision conflicts and user-key injection');
+const oldSaved=[...starters,...Array.from({length:47},(_,i)=>({...starters[0],id:`owner-custom-${i}`,name:`Existing custom ${i}`,width:200+i}))];
+assert.equal((await req('legacy','PUT',{...payload,presets:oldSaved,selected:'owner-custom-46'})).status,200);
+const legacy=(await req('legacy')).data,merged=mergePresets(legacy.presets);
+assert.equal(merged.length,85);
+const migrated=await req('legacy','PUT',{revision:legacy.revision,presets:merged,selected:legacy.selected});assert.equal(migrated.status,200);
+const reloaded=(await req('legacy')).data;assert.equal(reloaded.presets.length,85);assert.equal(reloaded.selected,'owner-custom-46');
+for(const custom of oldSaved)assert.equal(reloaded.presets.find(p=>p.id===custom.id).width,custom.width);
+const malformed=merged.map(p=>p.id==='uo-01'?{...p,format:'webp'}:p);assert.equal((await req('legacy','PUT',{revision:reloaded.revision,presets:malformed,selected:reloaded.selected})).status,400);
+assert.equal((await req('legacy')).data.revision,reloaded.revision);
+console.log('PASS: 50 existing recipes + 35 catalogue choices retained through save/reload; invalid official format cannot overwrite them');
+
+assert.equal((await req('a','PUT',payload,{Origin:'https://other.example',Connection:'close'})).status,403);
+console.log('PASS: foreign origins rejected');
