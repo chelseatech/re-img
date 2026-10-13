@@ -52,7 +52,6 @@ jobs:
       MAC_TARGET: ${{ matrix.target }}
       MAC_ARCHITECTURE: ${{ matrix.architecture }}
       MAC_BUILD_LABEL: ${{ matrix.label }}
-      APPLE_SIGNING_IDENTITY: '-'
     steps:
       - name: Check out exact private source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -88,7 +87,7 @@ jobs:
       - name: Run the real image-engine tests on this Mac
         run: cargo test --release --locked --manifest-path crates/prep-core/Cargo.toml --target "$MAC_TARGET"
 
-      - name: Build ad-hoc signed tester app and DMG
+      - name: Build unsigned tester app and DMG
         run: npm run tauri -- build --ci --target "$MAC_TARGET" --config src-tauri/tauri.macos-test.conf.json -- --locked
 
       - name: Verify DMG, application contents, architecture and native startup

@@ -11,7 +11,6 @@ binary="$app/Contents/MacOS/$executable"
 test -x "$binary"
 test -f "$app/Contents/Resources/icon.icns"
 test "$(lipo -archs "$binary")" = "$MAC_ARCHITECTURE"
-codesign --verify --deep --strict --verbose=2 "$app"
 shopt -s nullglob
 dmgs=("$bundle/dmg/"*.dmg)
 test "${#dmgs[@]}" -eq 1
@@ -20,7 +19,7 @@ hdiutil verify "$dmg"
 
 output="$GITHUB_WORKSPACE/macos-artifact"
 mkdir -p "$output"
-name="web-image-prep-0.1.2-macos-$MAC_BUILD_LABEL-adhoc-test"
+name="web-image-prep-0.1.2-macos-$MAC_BUILD_LABEL-unsigned-test"
 cp "$dmg" "$output/$name.dmg"
 ditto -c -k --sequesterRsrc --keepParent "$app" "$output/$name-app.zip"
 mountpoint=$(mktemp -d "$RUNNER_TEMP/web-image-prep-dmg.XXXXXX")
@@ -56,12 +55,12 @@ hashes={p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in files}
 record={'commit':os.environ['GITHUB_SHA'],'target':os.environ['MAC_TARGET'],'architecture':os.environ['MAC_ARCHITECTURE'],
  'host':subprocess.check_output(['sw_vers'],text=True),'version':plist.get('CFBundleShortVersionString'),
  'minimum_system_version':plist.get('LSMinimumSystemVersion'),'startup_15_seconds':os.environ['PACKAGE_STARTUP'],
- 'dmg_verified':True,'mounted_app_matches':True,'signature':'ad-hoc; not Developer ID; not notarized','sha256':hashes,
+ 'dmg_verified':True,'mounted_app_matches':True,'distribution':'unsigned tester package','sha256':hashes,
  'not_tested':['Downloaded-file Gatekeeper acceptance','interactive file picker/drop/crop/export','VoiceOver','different Mac hardware/OS versions']}
 (output/'VERIFICATION.json').write_text(json.dumps(record,indent=2)+'\n')
 (output/'READ-ME-FIRST.txt').write_text('Web image prep 0.1.2 macOS tester build\n\n'+
  'Choose the package matching Apple Silicon or Intel. The DMG contains the app; the ZIP contains the same .app bundle. Rust is not required to run it.\n\n'+
- 'This is an ad-hoc signed test build, not Apple Developer ID signed or notarized. Gatekeeper may block a browser-downloaded copy. No security settings have been changed, and no bypass instructions are provided.\n\n'+
+ 'This is an unsigned test package. macOS may block a browser-downloaded copy.\n\n'+
  'It preserves the existing desktop interface and local-only image engine. See VERIFICATION.json for exactly what passed and what remains untested.\n'+
  'Source commit: '+os.environ['GITHUB_SHA']+'\n')
 PY
