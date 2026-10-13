@@ -1,10 +1,15 @@
-export function safePart(text){return String(text).normalize('NFKC').replace(/[^\p{L}\p{N}_-]+/gu,'-').replace(/^-+|-+$/g,'').slice(0,70)||'image';}
+export function safePart(text,maxBytes=70){
+  const clean=String(text).normalize('NFKC').replace(/[^\p{L}\p{N}_-]+/gu,'-').replace(/^-+|-+$/g,'');
+  let part='',size=0;const encoder=new TextEncoder();
+  for(const char of clean){const length=encoder.encode(char).length;if(size+length>maxBytes)break;part+=char;size+=length;}
+  return part||'image';
+}
 export function filename(template,source,width,height,format,preset,sequence,used=new Set()){
   const ext=format==='jpeg'?'jpg':format;
   const tokens={name:safePart(source.replace(/\.[^.]*$/,'')),width,height,format:ext,preset:safePart(preset),sequence:String(sequence).padStart(2,'0')};
   let raw=template.replace(/\{([^}]+)\}/g,(_,key)=>tokens[key]??'');
   raw=raw.replace(new RegExp(`\\.${ext}$`,'i'),'');
-  let stem=safePart(raw).slice(0,140);
+  let stem=safePart(raw,180);
   if(/^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/i.test(stem))stem='image-'+stem;
   let name=`${stem}.${ext}`,n=2;
   while(used.has(name.toLocaleLowerCase()))name=`${stem}-${n++}.${ext}`;

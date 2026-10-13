@@ -2,6 +2,8 @@ import {test} from 'node:test';import assert from 'node:assert/strict';
 import {filename,dimensions} from '../lib/naming.mjs';import {starters,cleanPayload} from '../lib/preferences.mjs';import {zip} from '../lib/zip.mjs';
 test('actual dimensions, Unicode, reserved paths and safe case-insensitive collisions',()=>{
 const used=new Set();assert.equal(filename('{name}-{width}x{height}.{format}','photo.JPG',20,10,'jpeg','Wide',1,used),'photo-20x10.jpg');assert.equal(filename('{name}-{width}x{height}.{format}','PHOTO.png',20,10,'jpeg','Wide',2,used),'PHOTO-20x10-2.jpg');assert.equal(filename('{name}.{format}','../../CON.png',1,1,'png','x',1),'image-CON.png');assert.equal(filename('{name}-{preset}-{sequence}.{format}','été 🦆.jpeg',1,1,'webp','Hero / banner',2),'été-Hero-banner-02.webp');assert.equal(filename('{name}.{format}','.png',1,1,'png','x',1),'image.png');
+assert.match(filename('{name}-{width}x{height}.{format}','x'.repeat(150)+'.png',20,10,'png','x',1),/-20x10\.png$/);
+assert.ok(new TextEncoder().encode(filename('{name}-{preset}.{format}','字'.repeat(150)+'.png',1,1,'png','字'.repeat(100),1)).length<255);
 assert.deepEqual(dimensions(20,10,starters[0]),[17,9]);assert.deepEqual(dimensions(20,10,{...starters[0],fit:'contain'}),[20,10]);
 });
 test('sync accepts only whitelisted recipe/settings fields',()=>{

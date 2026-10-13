@@ -27,6 +27,6 @@ node tests/proof.mjs work/proof
 
 The synthetic Adobe RGB PNG proof compares actual native and WASM compressed-pixel scanlines and output ICC data. Only the ICC creation timestamp differs across native and WASM; profile colour data is identical. No personal photo fixtures are used.
 
-## Current checkpoint
+## Validation
 
-Native engine: 27 tests passed on Lappy before and after the memory-input refactor. WASM builds, first pixel proof passes, and the Sites application production build passes. Batch/Chrome QA, expanded parity coverage, persistence checks and private deployment are in progress. No public sharing or paid services are used. Actual Safari execution remains untested on this Windows device.
+Native engine: 28 tests passed; 61 native/WASM outcome comparisons and 48 pixel-identical decoded outputs passed. The production build, TypeScript check, authenticated local D1 persistence/user isolation and Chrome batch/keyboard/responsive/download checks passed. See the repository root RE_IMAGE_VALIDATION.md for the complete evidence and limits. Publication uses an owner-private Sites audience. No public sharing or paid services are used. Actual Safari and real two-device hosted sync remain owner acceptance checks.
