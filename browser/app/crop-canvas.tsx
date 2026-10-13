@@ -16,7 +16,7 @@ export default function CropCanvas(props:Props){
     if(!p.width||!p.height||p.fit!=='crop')return;
     const r=rect(),x=view.x+r.x*view.scale,y=view.y+r.y*view.scale,w=r.width*view.scale,h=r.height*view.scale;
     ctx.beginPath();ctx.rect(view.x,view.y,p.sw*view.scale,p.sh*view.scale);
-    if(p.circle)ctx.ellipse(x+w/2,y+h/2,w/2,h/2,0,0,Math.PI*2);else ctx.rect(x,y,w,h);
+    if(p.circle){ctx.moveTo(x+w,y+h/2);ctx.ellipse(x+w/2,y+h/2,w/2,h/2,0,0,Math.PI*2);ctx.closePath();}else ctx.rect(x,y,w,h);
     ctx.fillStyle='rgba(13,22,35,.62)';ctx.fill('evenodd');
     ctx.strokeStyle='#fff';ctx.lineWidth=2*factor;ctx.strokeRect(x,y,w,h);
     if(p.circle){ctx.beginPath();ctx.ellipse(x+w/2,y+h/2,w/2,h/2,0,0,Math.PI*2);ctx.stroke();}

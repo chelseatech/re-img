@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "RE-IMAGE · Web image prep",
+  title: "re-image",
   description: "Prepare web images on your device. Private presets, precise outputs.",
   icons: {
     icon: "/favicon.svg",
