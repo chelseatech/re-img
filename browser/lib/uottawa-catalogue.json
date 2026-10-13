@@ -12,7 +12,8 @@
     "maxKB": 1000,
     "maximumWeight": "1MB",
     "flexible": false,
-    "conflict": true
+    "conflict": true,
+    "warning": "The pixel dimensions do not exactly match the stated ratio (which may be rounded or approximate). Both are retained; this recipe uses the pixel dimensions."
   },
   {
     "id": "uo-02",
@@ -43,7 +44,8 @@
     "maxKB": 1000,
     "maximumWeight": "1MB",
     "flexible": false,
-    "conflict": false
+    "conflict": true,
+    "warning": "The pixel dimensions do not exactly match the stated ratio (which may be rounded or approximate). Both are retained; this recipe uses the pixel dimensions."
   },
   {
     "id": "uo-04",
@@ -73,8 +75,9 @@
     "maxKB": 0,
     "maximumWeight": null,
     "flexible": true,
-    "conflict": false,
-    "note": "Choose dimensions. Use the same size for every image in one paragraph."
+    "conflict": true,
+    "note": "Choose dimensions. Use the same size for every image in one paragraph.",
+    "warning": "The source shape includes square, but its ratio list does not include 1:1. No square size is assumed."
   },
   {
     "id": "uo-06",
@@ -89,7 +92,8 @@
     "maxKB": 200,
     "maximumWeight": "200KB",
     "flexible": false,
-    "conflict": true
+    "conflict": true,
+    "warning": "The pixel dimensions do not exactly match the stated ratio (which may be rounded or approximate). Both are retained; this recipe uses the pixel dimensions."
   },
   {
     "id": "uo-07",
@@ -184,7 +188,8 @@
     "maxKB": 0,
     "maximumWeight": null,
     "flexible": false,
-    "conflict": false
+    "conflict": true,
+    "warning": "The pixel dimensions do not exactly match the stated ratio (which may be rounded or approximate). Both are retained; this recipe uses the pixel dimensions."
   },
   {
     "id": "uo-13",
@@ -243,7 +248,8 @@
     "maxKB": 0,
     "maximumWeight": null,
     "flexible": false,
-    "conflict": false
+    "conflict": true,
+    "warning": "The pixel dimensions do not exactly match the stated ratio (which may be rounded or approximate). Both are retained; this recipe uses the pixel dimensions."
   },
   {
     "id": "uo-16",
@@ -258,7 +264,8 @@
     "maxKB": 0,
     "maximumWeight": null,
     "flexible": false,
-    "conflict": false
+    "conflict": true,
+    "warning": "The pixel dimensions do not exactly match the stated ratio (which may be rounded or approximate). Both are retained; this recipe uses the pixel dimensions."
   },
   {
     "id": "uo-17",
@@ -273,7 +280,8 @@
     "maxKB": 0,
     "maximumWeight": null,
     "flexible": false,
-    "conflict": true
+    "conflict": true,
+    "warning": "The pixel dimensions do not exactly match the stated ratio (which may be rounded or approximate). Both are retained; this recipe uses the pixel dimensions."
   },
   {
     "id": "uo-18",
@@ -288,7 +296,8 @@
     "maxKB": 1000,
     "maximumWeight": "1MB",
     "flexible": false,
-    "conflict": true
+    "conflict": true,
+    "warning": "The pixel dimensions do not exactly match the stated ratio (which may be rounded or approximate). Both are retained; this recipe uses the pixel dimensions."
   },
   {
     "id": "uo-19",
@@ -303,7 +312,8 @@
     "maxKB": 1000,
     "maximumWeight": "1MB",
     "flexible": false,
-    "conflict": true
+    "conflict": true,
+    "warning": "The pixel dimensions do not exactly match the stated ratio (which may be rounded or approximate). Both are retained; this recipe uses the pixel dimensions."
   },
   {
     "id": "uo-20",
@@ -318,7 +328,8 @@
     "maxKB": 1000,
     "maximumWeight": "1MB",
     "flexible": false,
-    "conflict": true
+    "conflict": true,
+    "warning": "The pixel dimensions do not exactly match the stated ratio (which may be rounded or approximate). Both are retained; this recipe uses the pixel dimensions."
   },
   {
     "id": "uo-21",
@@ -333,7 +344,8 @@
     "maxKB": 1000,
     "maximumWeight": "1MB",
     "flexible": false,
-    "conflict": false
+    "conflict": true,
+    "warning": "The pixel dimensions do not exactly match the stated ratio (which may be rounded or approximate). Both are retained; this recipe uses the pixel dimensions."
   },
   {
     "id": "uo-22",
@@ -348,7 +360,8 @@
     "maxKB": 1000,
     "maximumWeight": "1MB (for Image still)",
     "flexible": false,
-    "conflict": false
+    "conflict": true,
+    "warning": "The pixel dimensions do not exactly match the stated ratio (which may be rounded or approximate). Both are retained; this recipe uses the pixel dimensions."
   },
   {
     "id": "uo-23",
@@ -425,8 +438,9 @@
     "maxKB": 0,
     "maximumWeight": null,
     "flexible": true,
-    "conflict": false,
-    "note": "Variable size; source recommends at least 500 px wide. Ratios change by breakpoint."
+    "conflict": true,
+    "note": "Variable size; source recommends at least 500 px wide. Ratios change by breakpoint.",
+    "warning": "The source prose calls medium/larger layouts vertical, but lists 5:4. Keep the printed ratio and verify the intended orientation."
   },
   {
     "id": "uo-28",
@@ -489,7 +503,8 @@
     "maxKB": 0,
     "maximumWeight": null,
     "flexible": false,
-    "conflict": true
+    "conflict": true,
+    "warning": "The pixel dimensions do not exactly match the stated ratio (which may be rounded or approximate). Both are retained; this recipe uses the pixel dimensions."
   },
   {
     "id": "uo-32",
@@ -504,7 +519,8 @@
     "maxKB": 0,
     "maximumWeight": null,
     "flexible": false,
-    "conflict": true
+    "conflict": true,
+    "warning": "The pixel dimensions do not exactly match the stated ratio (which may be rounded or approximate). Both are retained; this recipe uses the pixel dimensions."
   },
   {
     "id": "uo-33",
@@ -535,6 +551,7 @@
     "maxKB": 0,
     "maximumWeight": null,
     "flexible": false,
-    "conflict": true
+    "conflict": true,
+    "warning": "The pixel dimensions do not exactly match the stated ratio (which may be rounded or approximate). Both are retained; this recipe uses the pixel dimensions."
   }
 ]
