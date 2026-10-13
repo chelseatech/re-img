@@ -1,0 +1,103 @@
+name: Private macOS test builds
+
+# Branch-only, explicitly requested builds. No releases, tags, secrets or public uploads.
+# The first run was authorized after reading actual organization quota and its $0 Actions budget.
+on:
+  push:
+    branches: [feat/macos-desktop]
+    paths:
+      - .github/workflows/macos-test-build.yml
+      - .github/scripts/macos-package-check.sh
+      - src-tauri/tauri.macos-test.conf.json
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: macos-test-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: >-
+      github.repository == 'chelseatech/web-image-prep' &&
+      github.ref == 'refs/heads/feat/macos-desktop' &&
+      (github.event_name == 'workflow_dispatch' || startsWith(github.event.head_commit.message, '[build-macos]'))
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        include:
+          - runner: macos-15
+            target: aarch64-apple-darwin
+            architecture: arm64
+            label: apple-silicon
+          - runner: macos-15-intel
+            target: x86_64-apple-darwin
+            architecture: x86_64
+            label: intel
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 45
+    defaults:
+      run:
+        shell: bash
+    env:
+      CARGO_TARGET_DIR: ${{ github.workspace }}/target
+      CARGO_BUILD_JOBS: 2
+      RUSTUP_TOOLCHAIN: 1.99.0
+      CARGO_TERM_COLOR: always
+      MAC_TARGET: ${{ matrix.target }}
+      MAC_ARCHITECTURE: ${{ matrix.architecture }}
+      MAC_BUILD_LABEL: ${{ matrix.label }}
+      APPLE_SIGNING_IDENTITY: '-'
+    steps:
+      - name: Check out exact private source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+
+      - name: Confirm native Mac runner architecture
+        run: |
+          test "$(uname -s)" = Darwin
+          test "$(uname -m)" = "$MAC_ARCHITECTURE"
+          sw_vers
+          xcodebuild -version
+
+      - name: Set up Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: '22'
+          package-manager-cache: false
+
+      - name: Install pinned Rust toolchain
+        run: |
+          rustup toolchain install 1.99.0 --profile minimal --no-self-update
+          rustup target add "$MAC_TARGET" --toolchain 1.99.0
+          rustc --version
+          cargo --version
+
+      - name: Install locked app dependencies and check desktop UI
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          npm run check
+          npm run icons
+
+      - name: Run the real image-engine tests on this Mac
+        run: cargo test --release --locked --manifest-path crates/prep-core/Cargo.toml --target "$MAC_TARGET"
+
+      - name: Build ad-hoc signed tester app and DMG
+        run: npm run tauri -- build --ci --target "$MAC_TARGET" --config src-tauri/tauri.macos-test.conf.json -- --locked
+
+      - name: Verify DMG, application contents, architecture and native startup
+        run: bash .github/scripts/macos-package-check.sh
+
+      - name: Upload private tester packages and verification evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: web-image-prep-macos-${{ matrix.label }}-${{ github.sha }}
+          path: macos-artifact/*
+          if-no-files-found: ignore
+          retention-days: 3
+          compression-level: 0
