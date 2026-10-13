@@ -1,6 +1,6 @@
 name: Windows installer
 
-# Deliberately scoped to the repair and Create preset branches. A workflow edit only starts a build
+# Deliberately scoped to the repair, Create preset and desktop branding branches. A workflow edit only starts a build
 # when its commit message begins with [build-windows]. Check the organization
 # Actions allowance before requesting another build. No tags or releases.
 # The Run workflow button becomes available only after this file is added to
@@ -8,7 +8,7 @@ name: Windows installer
 on:
   push:
     branches: [fix/icc-colour-import, feat/create-preset, feat/re-image-desktop-branding]
-    paths: [.github/workflows/windows-installer.yml]
+    paths: [.github/workflows/windows-installer.yml, 'crates/prep-core/src/**']
   workflow_dispatch:
 
 permissions:

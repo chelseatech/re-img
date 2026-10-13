@@ -203,8 +203,38 @@ mod tests {
     #[test] fn derivative_roundtrip_and_metadata_removed() { let img = DynamicImage::new_rgb8(100, 100); for format in ["jpeg", "png", "webp"] { let data = encode(&img, format, 85).unwrap(); let mut decoder = ImageReader::new(Cursor::new(data)).with_guessed_format().unwrap().into_decoder().unwrap(); assert!(decoder.exif_metadata().unwrap().is_none()); let profile = ColorProfile::new_from_slice(&decoder.icc_profile().unwrap().unwrap()).unwrap(); assert_eq!(profile.color_space, DataColorSpace::Rgb); assert!(profile.description.is_some()); } }
 
     fn fixture_dir() -> PathBuf {
-        let dir = std::env::temp_dir().join(format!("prep-icc-{}-{}", std::process::id(), std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos()));
-        fs::create_dir(&dir).unwrap(); dir
+        static NEXT: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+        let stamp = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos();
+        fixture_dir_at(&std::env::temp_dir(), stamp, &NEXT)
+    }
+    fn fixture_dir_at(base: &Path, stamp: u128, next: &std::sync::atomic::AtomicU64) -> PathBuf {
+        loop {
+            let serial = next.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+            let dir = base.join(format!("prep-icc-{}-{stamp}-{serial}", std::process::id()));
+            match fs::create_dir(&dir) {
+                Ok(()) => return dir,
+                Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => continue,
+                Err(error) => panic!("Cannot reserve test fixture directory {}: {error}", dir.display()),
+            }
+        }
+    }
+    #[test] fn fixture_directories_are_unique_with_a_fixed_clock_and_parallel_tests() {
+        let root = fixture_dir();
+        let occupied = root.join(format!("prep-icc-{}-42-0", std::process::id()));
+        fs::create_dir(&occupied).unwrap();
+        fs::write(occupied.join("keep.txt"), b"existing fixture").unwrap();
+        let next = std::sync::atomic::AtomicU64::new(0);
+        let dirs = std::thread::scope(|scope| {
+            let handles: Vec<_> = (0..32).map(|_| scope.spawn(|| fixture_dir_at(&root, 42, &next))).collect();
+            handles.into_iter().map(|handle| handle.join().unwrap()).collect::<Vec<_>>()
+        });
+        assert_eq!(dirs.iter().collect::<std::collections::HashSet<_>>().len(), 32);
+        assert!(dirs.iter().all(|dir| dir != &occupied && dir.parent() == Some(root.as_path())));
+        assert_eq!(fs::read(occupied.join("keep.txt")).unwrap(), b"existing fixture");
+        assert_eq!(next.load(std::sync::atomic::Ordering::Relaxed), 33);
+        for dir in dirs { fs::remove_dir(dir).unwrap(); }
+        fs::remove_file(occupied.join("keep.txt")).unwrap();
+        fs::remove_dir(occupied).unwrap(); fs::remove_dir(root).unwrap();
     }
     fn tagged_png(img: &image::RgbaImage, profile: Vec<u8>) -> Vec<u8> {
         let mut data = Vec::new();
