@@ -36,4 +36,19 @@ Implemented: generic/custom synced presets including dimensions, fit, crop defau
 
 Lappy's system Node is ARM64. Cloudflare workerd does not support Windows ARM64 Node, so a free portable Node 24.14.0 x64 was installed under this task's `toolchain/`, along with isolated Rust homes. No system PATH/shell configuration was changed. The documented npm shell shim failed; the starter's own npm install/build scripts succeeded via npm's direct JavaScript entrypoint. A running built-preview Worker briefly locked `dist/`; it was stopped before the final build. All work remains in the task workspace and private Git branch.
 
-Private Sites deployment details are recorded after publication below.
+## Private deployment
+
+Sites confirmed success at https://re-image.chelsea-tech-2945.chatgpt.site on 2026-10-13. Owner-only access was confirmed before deployment: one owner, zero external visitors, no groups/editors.
+
+- Project: appgprj_6ace73957edc8191937355a7461c00ef
+- Version: appgprj_6ace73957edc8191937355a7461c00ef~appgver_3556e27ad9ec8191b691ba74e30fae55
+- Deployment: appgdep_6ace7ce51abc8191b8e97896ea6c49dc
+- Sites source commit: 8b2f00997800b6854ef75010f6d08f5c93ba3571
+- Tested browser source repository commit: 594c9c796a47590722c61673dac545c1d038f63b
+
+Actual hosted owner authentication and D1 saving passed in the connected Chrome browser. The saved default recipes were restored after a reload and in an independent page. This verifies real hosted persistence; it is not a test on a second physical device.
+
+Hosted automated image import was blocked by the ChatGPT Chrome extension's disabled file-URL access. No new extension/file permission was granted. The native chooser was dismissed. Local installed-Chrome imports, Worker image processing and downloads passed; the deployed automated import remains unverified. Actual Safari and a second physical device remain acceptance checks.
+
+Packaging used the supported Sites helper with hidden-stdin credentials. Session-only Git safe-directory, Git Bash PATH and TAR_OPTIONS=--force-local resolved Windows ownership/path differences without global settings changes. A refreshed same-Site credential was needed after its first short-lived token expired. No credentials were written to source or files.
+
