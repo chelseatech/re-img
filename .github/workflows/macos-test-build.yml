@@ -9,6 +9,8 @@ on:
       - .github/workflows/macos-test-build.yml
       - .github/scripts/macos-package-check.sh
       - src-tauri/tauri.macos-test.conf.json
+      - src/main.js
+      - src/style.css
   workflow_dispatch:
 
 permissions:
@@ -90,7 +92,9 @@ jobs:
         run: npm run tauri -- build --ci --target "$MAC_TARGET" --config src-tauri/tauri.macos-test.conf.json -- --locked
 
       - name: Verify DMG, application contents, architecture and native startup
-        run: bash .github/scripts/macos-package-check.sh
+        run: |
+          grep -q 'Created by Ryan O’Connor' dist/assets/*.js
+          bash .github/scripts/macos-package-check.sh
 
       - name: Upload private tester packages and verification evidence
         if: always()
