@@ -7,7 +7,7 @@ name: Windows installer
 # the default branch; that merge is a separate decision.
 on:
   push:
-    branches: [fix/icc-colour-import, feat/create-preset]
+    branches: [fix/icc-colour-import, feat/create-preset, feat/re-image-desktop-branding]
     paths: [.github/workflows/windows-installer.yml]
   workflow_dispatch:
 
@@ -22,8 +22,8 @@ jobs:
   build:
     if: >-
       github.repository == 'chelseatech/web-image-prep' &&
-      (github.ref == 'refs/heads/fix/icc-colour-import' || github.ref == 'refs/heads/feat/create-preset') &&
-      (github.event_name == 'workflow_dispatch' || startsWith(github.event.head_commit.message, '[build-windows]'))
+      (github.ref == 'refs/heads/fix/icc-colour-import' || github.ref == 'refs/heads/feat/create-preset' || github.ref == 'refs/heads/feat/re-image-desktop-branding') &&
+      (github.event_name == 'workflow_dispatch' || startsWith(github.event.head_commit.message, '[build-windows]') || startsWith(github.event.head_commit.message, '[build-desktop]'))
     runs-on: windows-2022
     timeout-minutes: 45
     defaults:
@@ -61,7 +61,9 @@ jobs:
         run: npm run icons
 
       - name: Check JavaScript and crop regressions
-        run: npm run check
+        run: |
+          npm run check
+          node .github/scripts/branding-check.mjs
 
       - name: Test image processing on native Windows
         run: cargo test --release --locked --manifest-path crates/prep-core/Cargo.toml
@@ -73,6 +75,8 @@ jobs:
         timeout-minutes: 5
         run: |
           $ErrorActionPreference = 'Stop'
+          node .github/scripts/branding-check.mjs --built
+          if ($LASTEXITCODE -ne 0) { throw 'Compiled branding check failed.' }
           $installers = @(Get-ChildItem "$env:CARGO_TARGET_DIR/release/bundle/nsis/*-setup.exe")
           if ($installers.Count -ne 1) { throw "Expected exactly one NSIS installer; found $($installers.Count)." }
           $installer = $installers[0]
@@ -100,7 +104,7 @@ jobs:
           "$hash  $($installer.Name)" | Set-Content -Encoding utf8 (Join-Path $output 'SHA256SUMS.txt')
           $version = (Get-Content package.json -Raw | ConvertFrom-Json).version
           @"
-          Web image prep $version - Windows x64 NSIS installer
+          re-image $version - Windows x64 NSIS installer
           Source commit: $env:GITHUB_SHA
           Workflow run: $env:GITHUB_SERVER_URL/$env:GITHUB_REPOSITORY/actions/runs/$env:GITHUB_RUN_ID
           SHA-256: $hash
@@ -151,20 +155,32 @@ jobs:
           $exe = Join-Path $env:CARGO_TARGET_DIR 'release/web-image-prep.exe'
           $portableDir = Join-Path $env:RUNNER_TEMP 'web-image-prep-portable'
           New-Item -ItemType Directory -Path $portableDir | Out-Null
-          Copy-Item -LiteralPath $exe -Destination $portableDir
+          $renamedExe = Join-Path $portableDir 're-image.exe'
+          Copy-Item -LiteralPath $exe -Destination $renamedExe
+          if ((Get-Item -LiteralPath $renamedExe).VersionInfo.ProductName -ne 're-image') { throw 'Portable executable product metadata is not re-image.' }
+          $previousArguments = $env:WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS
+          $env:WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS = '--remote-debugging-port=9224 --remote-debugging-address=127.0.0.1'
+          $app = Start-Process -FilePath $renamedExe -WindowStyle Hidden -PassThru
+          try {
+            node .github/scripts/preset-smoke.mjs verify 9224 "CI reusable preset $env:GITHUB_RUN_ID" $portableDir
+            if ($LASTEXITCODE -ne 0) { throw 'Renamed portable app could not restore existing presets.' }
+          } finally {
+            if (!$app.HasExited) { Stop-Process -Id $app.Id -Force }
+            $env:WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS = $previousArguments
+          }
           Copy-Item -LiteralPath README.md,PRESET-VALIDATION.md,UOTTAWA-VALIDATION.md -Destination $portableDir
           $output = Join-Path $env:GITHUB_WORKSPACE 'installer-artifact'
-          Copy-Item -LiteralPath (Join-Path $output 'native-preset-create.json'),(Join-Path $output 'native-preset-verify.json') -Destination $portableDir
+          Copy-Item -LiteralPath (Join-Path $output 'native-preset-create.json') -Destination $portableDir
           $exeHash = (Get-FileHash -LiteralPath $exe -Algorithm SHA256).Hash.ToLowerInvariant()
           $version = (Get-Content package.json -Raw | ConvertFrom-Json).version
           @"
-          Web image prep $version — Windows x64 portable test build
+          re-image $version — Windows x64 portable test build
           Source commit: $env:GITHUB_SHA
           Workflow run: $env:GITHUB_SERVER_URL/$env:GITHUB_REPOSITORY/actions/runs/$env:GITHUB_RUN_ID
           Executable SHA-256: $exeHash
           Verified: frontend tests/build, native Rust core tests, release compilation,
           installed-app startup, and native Create preset save/restart/persistence.
-          Extract the whole ZIP, then run web-image-prep.exe. Requires the normal
+          Extract the whole ZIP, then run re-image.exe. Requires the normal
           Windows WebView2 Runtime. This unsigned build may show a publisher warning;
           do not disable Windows security protections.
           Create preset: Prepare your export > Website profile > Create preset.
@@ -172,8 +188,10 @@ jobs:
           Original files are preserved; no upscaling; uOttawa remains JPEG/PNG only.
           Not covered: interactive file picker/drop/crop and real image export on a user's PC.
           "@ | Set-Content -Encoding utf8 (Join-Path $portableDir 'BUILD-INFO.txt')
-          $portableZip = Join-Path $output "web-image-prep-$version-create-preset-windows-x64-portable.zip"
+          $portableZip = Join-Path $output "re-image-$version-windows-x64-portable.zip"
           Compress-Archive -LiteralPath $portableDir -DestinationPath $portableZip
+          if ((Get-Item -LiteralPath $portableZip).Length -gt 50MB) { throw 'Portable ZIP exceeds 50 MB limit.' }
+          if ((Get-ChildItem -LiteralPath $output -File | Measure-Object Length -Sum).Sum -gt 100MB) { throw 'Combined Windows artifacts exceed 100 MB limit.' }
           $zipHash = (Get-FileHash -LiteralPath $portableZip -Algorithm SHA256).Hash.ToLowerInvariant()
           "$zipHash  $([IO.Path]::GetFileName($portableZip))" | Add-Content (Join-Path $output 'SHA256SUMS.txt')
           Get-Content (Join-Path $portableDir 'BUILD-INFO.txt') | Add-Content $env:GITHUB_STEP_SUMMARY
@@ -181,7 +199,7 @@ jobs:
       - name: Save the private installer and verification summary
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: web-image-prep-windows-x64-${{ github.sha }}
+          name: re-image-windows-x64-${{ github.sha }}
           path: installer-artifact/*
           if-no-files-found: error
           retention-days: 3

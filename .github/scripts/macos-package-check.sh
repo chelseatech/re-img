@@ -8,6 +8,9 @@ bundle="$CARGO_TARGET_DIR/$MAC_TARGET/release/bundle"
 app="$bundle/macos/re-image.app"
 test -d "$app"
 executable=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$app/Contents/Info.plist")
+test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleName' "$app/Contents/Info.plist")" = re-image
+test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$app/Contents/Info.plist")" = ca.ryan.webimageprep
+test "$executable" = web-image-prep
 binary="$app/Contents/MacOS/$executable"
 test -x "$binary"
 test -f "$app/Contents/Resources/icon.icns"
@@ -50,11 +53,13 @@ output=pathlib.Path(os.environ['GITHUB_WORKSPACE'])/'macos-artifact'
 plist=plistlib.loads((pathlib.Path(os.environ['PACKAGE_APP'])/'Contents/Info.plist').read_bytes())
 files=[pathlib.Path(os.environ[k]) for k in ('PACKAGE_DMG','PACKAGE_ZIP')]
 for p in files:
-    if p.stat().st_size>100_000_000: raise SystemExit('Package exceeds 100 MB safety limit')
+    if p.stat().st_size>50_000_000: raise SystemExit('Package exceeds 50 MB safety limit')
+if sum(p.stat().st_size for p in files)>50_000_000: raise SystemExit('Combined Mac packages exceed 50 MB limit')
 hashes={p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in files}
 (output/'SHA256SUMS.txt').write_text(''.join(f'{value}  {name}\n' for name,value in hashes.items()))
 record={'commit':os.environ['GITHUB_SHA'],'target':os.environ['MAC_TARGET'],'architecture':os.environ['MAC_ARCHITECTURE'],
  'host':subprocess.check_output(['sw_vers'],text=True),'version':plist.get('CFBundleShortVersionString'),
+ 'product_name':plist.get('CFBundleName'),'app_identifier':plist.get('CFBundleIdentifier'),'executable':plist.get('CFBundleExecutable'),
  'minimum_system_version':plist.get('LSMinimumSystemVersion'),'startup_15_seconds':os.environ['PACKAGE_STARTUP'],
  'dmg_verified':True,'mounted_app_matches':True,'distribution':'unsigned tester package','sha256':hashes,
  'not_tested':['Downloaded-file Gatekeeper acceptance','interactive file picker/drop/crop/export','VoiceOver','different Mac hardware/OS versions']}

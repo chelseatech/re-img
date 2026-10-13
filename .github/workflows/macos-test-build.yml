@@ -4,7 +4,7 @@ name: Private macOS test builds
 # The first run was authorized after reading actual organization quota and its $0 Actions budget.
 on:
   push:
-    branches: [feat/macos-desktop]
+    branches: [feat/macos-desktop, feat/re-image-desktop-branding]
     paths:
       - .github/workflows/macos-test-build.yml
       - .github/scripts/macos-package-check.sh
@@ -24,8 +24,8 @@ jobs:
   build:
     if: >-
       github.repository == 'chelseatech/web-image-prep' &&
-      github.ref == 'refs/heads/feat/macos-desktop' &&
-      (github.event_name == 'workflow_dispatch' || startsWith(github.event.head_commit.message, '[build-macos]'))
+      (github.ref == 'refs/heads/feat/macos-desktop' || github.ref == 'refs/heads/feat/re-image-desktop-branding') &&
+      (github.event_name == 'workflow_dispatch' || startsWith(github.event.head_commit.message, '[build-macos]') || startsWith(github.event.head_commit.message, '[build-desktop]'))
     strategy:
       fail-fast: false
       max-parallel: 2
@@ -40,7 +40,7 @@ jobs:
             architecture: x86_64
             label: intel
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: 45
+    timeout-minutes: 30
     defaults:
       run:
         shell: bash
@@ -82,6 +82,7 @@ jobs:
         run: |
           npm ci --ignore-scripts --no-audit --no-fund
           npm run check
+          node .github/scripts/branding-check.mjs
           npm run icons
 
       - name: Run the real image-engine tests on this Mac
@@ -92,7 +93,7 @@ jobs:
 
       - name: Verify DMG, application contents, architecture and native startup
         run: |
-          grep -q 'Created by Ryan O’Connor' dist/assets/*.js
+          node .github/scripts/branding-check.mjs --built
           bash .github/scripts/macos-package-check.sh
 
       - name: Upload private tester packages and verification evidence

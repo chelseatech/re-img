@@ -53,6 +53,8 @@ const check = async (name, expression) => {
 };
 try {
   await cdp('Runtime.enable');await cdp('Page.enable');
+  await check('re-image document and displayed product name', `document.title==='re-image' && document.querySelector('header h1')?.textContent==='re-image'`);
+  await check('small readable creator credit is displayed', `document.querySelector('.creator-credit')?.textContent==='Created by Ryan O\u2019Connor' && parseFloat(getComputedStyle(document.querySelector('.creator-credit')).fontSize)>=12`);
   await check('Create preset button is available in the compiled app', `Boolean(document.getElementById('create-preset')?.onclick)`);
   await check('all 34 official component titles are in the compiled app', `JSON.stringify(Array.from(document.querySelectorAll('#profile optgroup')[0].children).map(o=>o.textContent))===${JSON.stringify(JSON.stringify(guide.components.map(c=>c.name)))}`);
   if(mode==='create') {
