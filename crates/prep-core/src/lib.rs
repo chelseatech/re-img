@@ -45,9 +45,15 @@ pub fn crop_rect(sw: u32, sh: u32, o: &Options) -> Result<Crop, String> {
 
 pub fn load(path: &Path) -> Result<DynamicImage, String> {
     if fs::metadata(path).map_err(|e| e.to_string())?.len() > 100_000_000 { return Err("Source exceeds the 100 MB prototype input limit.".into()); }
-    let mut reader = ImageReader::open(path).map_err(|e| e.to_string())?.with_guessed_format().map_err(|e| e.to_string())?;
+    load_bytes(&fs::read(path).map_err(|e| e.to_string())?)
+}
+
+/// The native and browser entrypoints share all metadata validation and decoding.
+pub fn load_bytes(bytes: &[u8]) -> Result<DynamicImage, String> {
+    if bytes.len() > 100_000_000 { return Err("Source exceeds the 100 MB prototype input limit.".into()); }
+    let mut reader = ImageReader::new(std::io::Cursor::new(bytes)).with_guessed_format().map_err(|e| e.to_string())?;
     if !matches!(reader.format(), Some(image::ImageFormat::Jpeg | image::ImageFormat::Png | image::ImageFormat::WebP)) { return Err("Use JPEG, PNG or WebP. HEIC, RAW and animated formats are deferred.".into()); }
-    let has_icc = colour_metadata::has_icc(path, reader.format().unwrap())
+    let has_icc = colour_metadata::has_icc(bytes, reader.format().unwrap())
         .map_err(|e| format!("Cannot validate source ICC/colour metadata: {e}. {COLOUR_FALLBACK}"))?;
     let mut limits = image::Limits::default();
     limits.max_image_width = Some(16000); limits.max_image_height = Some(16000); limits.max_alloc = Some(MAX_DECODE_BYTES);

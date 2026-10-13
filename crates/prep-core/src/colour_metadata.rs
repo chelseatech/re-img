@@ -1,14 +1,13 @@
 //! Check colour metadata envelopes before permissive image decoders can discard
 //! malformed ICC chunks and make a tagged image look like untagged sRGB.
-use std::io::{BufReader, Read, Seek, SeekFrom};
-use std::path::Path;
+use std::io::{Cursor, Read, Seek, SeekFrom};
 
-struct Source {
-    reader: BufReader<std::fs::File>,
+struct Source<'a> {
+    reader: Cursor<&'a [u8]>,
     length: u64,
 }
 
-impl Source {
+impl Source<'_> {
     fn read<const N: usize>(&mut self) -> Result<[u8; N], String> {
         let mut bytes = [0; N];
         self.reader.read_exact(&mut bytes).map_err(|e| e.to_string())?;
@@ -24,10 +23,8 @@ impl Source {
     }
 }
 
-pub(super) fn has_icc(path: &Path, format: image::ImageFormat) -> Result<bool, String> {
-    let file = std::fs::File::open(path).map_err(|e| e.to_string())?;
-    let length = file.metadata().map_err(|e| e.to_string())?.len();
-    let mut source = Source { reader: BufReader::new(file), length };
+pub(super) fn has_icc(bytes: &[u8], format: image::ImageFormat) -> Result<bool, String> {
+    let mut source = Source { reader: Cursor::new(bytes), length: bytes.len() as u64 };
     match format {
         image::ImageFormat::Jpeg => jpeg(&mut source),
         image::ImageFormat::Png => png(&mut source),
