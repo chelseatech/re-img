@@ -1,18 +1,21 @@
 import {flexibleDimensions} from './flexible-size.mjs';
 import {catalogueById} from './catalogue.mjs';
 import {cropRect,outputSize} from './crop.mjs';
-export function safePart(text,maxBytes=70){
-  const clean=String(text).normalize('NFKC').replace(/[^\p{L}\p{N}_-]+/gu,'-').replace(/^-+|-+$/g,'');
-  let part='',size=0;const encoder=new TextEncoder();
-  for(const char of clean){const length=encoder.encode(char).length;if(size+length>maxBytes)break;part+=char;size+=length;}
-  return part||'image';
+function asciiStem(text,maxLength=70,trim=true){
+ const clean=String(text??'').normalize('NFKD').replace(/\p{M}/gu,'').toLowerCase().replace(/œ/g,'oe').replace(/æ/g,'ae').replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'').replace(/-+/g,'-').slice(0,maxLength);
+ return trim?clean.replace(/^-+|-+$/g,''):clean;
 }
+export function safePart(text,maxBytes=70){return asciiStem(text,maxBytes)||'image';}
+function withoutExtension(text){return String(text??'').split(/[\\/]/).pop().replace(/\.(?:jpe?g|png|webp|gif|heic|tiff?|bmp|svg|zip)$/i,'');}
+// Keep a trailing dash while typing so spaces/dashes can separate the next word.
+// Export names and blur use filenameStem, which trims edges and supplies the fallback.
+export function editableFilenameStem(text){return asciiStem(withoutExtension(text),70,false);}
 export function filenameStem(text,fallback='image'){
-  const leaf=String(text??'').split(/[\\/]/).pop().replace(/\.(?:jpe?g|png|webp|gif|heic|tiff?|bmp|svg|zip)$/i,'');
+  const leaf=withoutExtension(text);
   return safePart(leaf||fallback);
 }
 export function imageFilename(stem,source,width,height,format,sequence,used=new Set(),suffix=true){
-  const base=filenameStem(stem||source,filenameStem(source));
+  const base=filenameStem(stem);
   return filename(suffix?'{name}-{width}x{height}.{format}':'{name}.{format}',`${base}.bin`,width,height,format,'',sequence,used);
 }
 export function filename(template,source,width,height,format,preset,sequence,used=new Set()){
