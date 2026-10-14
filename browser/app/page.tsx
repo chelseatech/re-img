@@ -1,4 +1,4 @@
 import Prep from './prep';
-import { requireChatGPTUser } from './chatgpt-auth';
+import { getChatGPTUser } from './chatgpt-auth';
 export const dynamic = 'force-dynamic';
-export default async function Page() { await requireChatGPTUser('/'); return <Prep/>; }
+export default async function Page() { return <Prep signedIn={!!await getChatGPTUser()}/>; }
