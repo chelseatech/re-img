@@ -23,9 +23,10 @@ export function cleanPreset(p){
 }
 export function cleanPayload(body){
   if(!body||!Number.isInteger(body.revision)||body.revision<0||!Array.isArray(body.presets)||body.presets.length<1||body.presets.length>150)throw Error('Invalid settings payload');
-  if(Object.keys(body).some(k=>!['revision','presets','selected'].includes(k)))throw Error('Unknown payload field');
+  if(Object.keys(body).some(k=>!['revision','presets','selected','language'].includes(k)))throw Error('Unknown payload field');
+  if(body.language!==undefined&&!['fr','en'].includes(body.language))throw Error('Invalid language');
   for(const p of body.presets)if(Object.keys(p).some(k=>!Object.keys(starters[0]).includes(k)))throw Error('Unknown preset field');
   const presets=body.presets.map(cleanPreset);
   if(new Set(presets.map(p=>p.id)).size!==presets.length||!presets.some(p=>p.id===body.selected))throw Error('Invalid selected preset');
-  return {presets,selected:body.selected};
+  return {presets,selected:body.selected,...(body.language!==undefined?{language:body.language}:{})};
 }
