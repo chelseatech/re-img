@@ -1,5 +1,7 @@
 # Shared counter checkpoint — not published
 
+Current result: see [COUNTER_VALIDATION.md](COUNTER_VALIDATION.md). The local migrations and remaining checks below have now completed;0001/0002 are already applied locally and must not be replayed. Publication is still awaiting confirmation. This document records the earlier model-switch checkpoint.
+
 Ryan requested resuming the counter, then requested a safe checkpoint to continue with 6.1 Ultra. Release confirmation remains pending. Do not publish, apply hosted migrations, or send fake counter events to the live Site.
 
 ## Preserved state
