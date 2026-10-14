@@ -19,8 +19,16 @@
 
 ## Limits
 
-Clipboard integration uses event fixtures and never read Ryan's clipboard. Native OS clipboard image paste, physical drag/file chooser and Safari remain manual checks. Chrome's file-URL upload permission is disabled and native Windows automation is unavailable; no permission was changed. Current hosted owner sync is not exercised with Ryan's authenticated session; local real D1 and hosted anonymous/spoof rejection are the available evidence. Browser download destination prompts remain controlled by browser settings.
+Clipboard integration uses event fixtures and never read Ryan's clipboard. Native OS clipboard image paste, physical drag/file chooser and Safari remain manual checks. Chrome's file-URL upload permission is disabled and native Windows automation is unavailable; no permission was changed. Hosted Chrome restored an existing saved account selection (uo-11); no save action was performed. Hosted owner writes and cross-device conflicts were not retested; local real D1 covers those semantics. Browser download destination prompts remain controlled by browser settings.
 
 ## Publication
 
-Pending exact GitHub/source/deployment evidence below. Existing public audience and URL are retained; no new Site or database migration is required.
+- App GitHub commit: `8b780e215513b139324ca11858c02e8b75cd9649`, pushed and exact remote branch verified.
+- Sites source commit: `a9d7396734d434c4a9687461baaa7edda03d55be`, pushed by the supported workflow and saved from the matching production archive.
+- Version: 13, `appgprj_6ace73957edc8191937355a7461c00ef~appgver_6b8bc34b852c819183bcf1961e0ef7f7`.
+- Deployment: `appgdep_6acfe1e7b6ac819199bd30844fac35b0`, succeeded at 20:11:37 UTC.
+- URL: https://re-image.chelsea-tech-2945.chatgpt.site — existing public audience retained.
+- Archive SHA-256: `8edd0ea32dc2df29397b667b8fb4d64005871c51a26caa6d347cb7105e7eecbe`, 76 files, 2928640 bytes.
+- Hosted no-cookie checks: root 200; owner preferences GET/PUT 401; forged visitor headers 401; exact icon 200 with verified bytes/hash; no counter UI and counter endpoint 404.
+- Hosted Chrome visually confirmed the real icon, strong dashed frame, exact mode labels and paste hint. Screenshot: task root `reimg-v13-hosted.png`.
+- No new Site, production schema, permissions or services were created. Both checkouts were clean after publication; this evidence update is a documentation-only GitHub follow-up.
