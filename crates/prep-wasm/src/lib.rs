@@ -16,6 +16,7 @@ pub fn execute(bytes: &[u8], request: &str) -> Result<(serde_json::Value, Vec<u8
     options.uottawa = false;
     let (out, warning) = match req.fit.as_str() {
         "crop" => prep_core::prepare(&img,&options)?,
+        "crop_exact" => prep_core::prepare_exact(&img,&options)?,
         "contain" => prep_core::prepare_contain(&img,&options)?,
         _ => return Err("Unknown fit mode".into()),
     };

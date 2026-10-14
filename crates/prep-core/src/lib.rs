@@ -36,8 +36,8 @@ pub fn crop_rect(sw: u32, sh: u32, o: &Options) -> Result<Crop, String> {
     let ratio = o.width as f64 / o.height as f64;
     let w = (sw as f64).min(sh as f64 * ratio) / o.zoom;
     let h = w / ratio;
-    let cw = (w.floor() as u32).max(1).min(sw);
-    let ch = (h.floor() as u32).max(1).min(sh);
+    let cw = ((w + 1e-7).floor() as u32).max(1).min(sw);
+    let ch = ((h + 1e-7).floor() as u32).max(1).min(sh);
     let x = (o.center_x.clamp(0.0, 1.0) * sw as f64 - cw as f64 / 2.0).round().clamp(0.0, (sw - cw) as f64) as u32;
     let y = (o.center_y.clamp(0.0, 1.0) * sh as f64 - ch as f64 / 2.0).round().clamp(0.0, (sh - ch) as f64) as u32;
     Ok(Crop { x, y, width: cw, height: ch })
@@ -117,11 +117,18 @@ fn convert_to_srgb(img: &mut DynamicImage, icc: &[u8]) -> Result<(), String> {
 pub fn has_alpha(img: &DynamicImage) -> bool { img.to_rgba8().pixels().any(|p| p[3] < 255) }
 
 pub fn prepare(img: &DynamicImage, o: &Options) -> Result<(DynamicImage, Option<String>), String> {
+    prepare_crop(img, o, false)
+}
+pub fn prepare_exact(img: &DynamicImage, o: &Options) -> Result<(DynamicImage, Option<String>), String> {
+    prepare_crop(img, o, true)
+}
+fn prepare_crop(img: &DynamicImage, o: &Options, exact: bool) -> Result<(DynamicImage, Option<String>), String> {
     let (sw, sh) = img.dimensions();
     let c = crop_rect(sw, sh, o)?;
     let scale = (c.width as f64 / o.width as f64).min(c.height as f64 / o.height as f64).min(1.0);
-    let w = (o.width as f64 * scale).floor().max(1.0) as u32;
-    let h = (o.height as f64 * scale).floor().max(1.0) as u32;
+    let native_w = c.width.min(o.width);
+    let native_h = (native_w as f64 * o.height as f64 / o.width as f64).round().max(1.0) as u32;
+    let (w,h) = if exact { (o.width,o.height) } else if native_h <= c.height { (native_w,native_h) } else { ((o.width as f64 * scale + 1e-7).floor().max(1.0) as u32,(o.height as f64 * scale + 1e-7).floor().max(1.0) as u32) };
     let small = w < o.width || h < o.height;
     if small && !o.allow_smaller { return Err(format!("Source crop is too small: available {}×{}, requested {}×{}. Choose a larger source or explicitly allow a smaller derivative.", c.width, c.height, o.width, o.height)); }
     let mut out = img.crop_imm(c.x, c.y, c.width, c.height).resize_exact(w, h, image::imageops::FilterType::Lanczos3);
