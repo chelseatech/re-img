@@ -1,6 +1,6 @@
 # Shared download counter and empty-only drop outline
 
-Status: ready for release approval, local-only. No GitHub push, Sites save/deploy, hosted migration or production counter event was performed. Live version13 remains unchanged.
+Status: published as version14 at https://re-image.chelsea-tech-2945.chatgpt.site after Ryan's explicit approval. Existing public audience and owner access were retained. The normal Sites deployment applied the additive schema; no synthetic production counter event or historical backfill was performed.
 
 ## Behavior and data integrity
 
@@ -42,4 +42,15 @@ New tests: `tests/counter-d1.mjs`, `counter-cold.mjs`, `counter-ui.mjs`, `drop-b
 
 Main local migrations are already applied; do not replay them. The cold-start test requires a newly created isolated `--persist-to` directory and the exact schema files; the current `.wrangler/counter-cold` contains synthetic test history. Both `.wrangler` and `work` are ignored and excluded from deployment artifacts. No production test events or migration seeds are required to verify release later.
 
-Hosted counter/migration execution remains untested until publication is approved. Native file saving/clipboard/physical drag and Safari retain the previously disclosed manual limits; canvas painting is mocked in jsdom. No blocker remains in local preparation. After confirmation, push the reviewed branch, package through Sites, preserve the current audience and URL, apply only the new schema through normal publication and verify hosted reads without fake events.
+Native file saving/clipboard/physical drag and Safari retain the previously disclosed manual limits; canvas painting is mocked in jsdom. Hosted increments and owner writes were not exercised with synthetic events. Local real D1 covers increment/trigger behavior, retries, isolation and conflicts. Hosted verification was read-only; no blocker remains.
+
+## Publication evidence — 2026-10-14
+
+- Tested app/GitHub commit: `9ce9d769cf5270fa38d2aa629eb0f489bcbd5dcf`, pushed and exact remote branch verified.
+- Sites source: `f6ae73b8a47ced65dde33108acaed4dd60c5bb3a`, pushed and packaged by the supported helper from the tested build.
+- Saved version14: `appgprj_6ace73957edc8191937355a7461c00ef~appgver_39aaca35d3b48191b51547556c7e0a05`.
+- Deployment: `appgdep_6acff665a3908191875bb7f6edaf93ad`, succeeded at21:38:55 UTC, environment revision0.
+- Archive SHA-256: `507d0f2d448ce95c4327ce8c748a7c1d37f09cf45b284a4d88e47aedc38098e3`,2949120bytes,81files. Only build/schema artifacts were packaged; ignored local SQLite/test data was excluded.
+- GET-only checks: app200, counter200 with `{total:0}` and `no-store`, owner preferences401, forged identity headers401, exact icon hash, empty border overrides and borderless loaded base CSS confirmed. No counter POST was made.
+- Fresh Chrome tab confirmed French default, fixed bottom-right verified0, correct empty frame and icon. No loaded user session was reloaded and no clipboard/file/download action occurred. Screenshot: task root `reimg-v14-hosted.png`.
+- Both checkouts were clean after deployment. This evidence update is a documentation-only GitHub follow-up; the deployed app commit and Sites source above remain exact.
