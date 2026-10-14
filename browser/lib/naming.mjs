@@ -1,3 +1,4 @@
+import {flexibleDimensions} from './flexible-size.mjs';
 export function safePart(text,maxBytes=70){
   const clean=String(text).normalize('NFKC').replace(/[^\p{L}\p{N}_-]+/gu,'-').replace(/^-+|-+$/g,'');
   let part='',size=0;const encoder=new TextEncoder();
@@ -24,6 +25,7 @@ export function filename(template,source,width,height,format,preset,sequence,use
   used.add(name.toLocaleLowerCase());return name;
 }
 export function dimensions(sw,sh,p,crop={zoom:1}){
+  const flexible=flexibleDimensions(sw,sh,p,crop);if(flexible)return flexible;
   if(p.fit==='contain'){const s=Math.min(p.width/sw,p.height/sh,1);return [Math.max(1,Math.floor(sw*s)),Math.max(1,Math.floor(sh*s))];}
   const cw=Math.max(1,Math.floor(Math.min(sw,sh*p.width/p.height)/crop.zoom));
   const ch=Math.max(1,Math.floor(Math.min(sw,sh*p.width/p.height)/crop.zoom/(p.width/p.height)));
