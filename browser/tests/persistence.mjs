@@ -29,3 +29,14 @@ console.log('PASS: 50 existing recipes + 35 catalogue choices retained through s
 
 assert.equal((await req('a','PUT',payload,{Origin:'https://other.example',Connection:'close'})).status,403);
 console.log('PASS: foreign origins rejected');
+
+const accountA=(await req('a')).data;
+const languageSaved=await req('a','PUT',{revision:accountA.revision,presets:accountA.presets,selected:accountA.selected,language:'en'});
+assert.equal(languageSaved.status,200);assert.equal((await req('a')).data.language,'en');
+assert.equal((await req('b')).data.language,undefined);
+const invalidLanguage=await req('a','PUT',{revision:languageSaved.data.revision,presets:languageSaved.data.presets,selected:languageSaved.data.selected,language:'de'});
+assert.equal(invalidLanguage.status,400);assert.equal((await req('a')).data.revision,languageSaved.data.revision);
+const frenchSaved=await req('a','PUT',{revision:languageSaved.data.revision,presets:languageSaved.data.presets,selected:languageSaved.data.selected,language:'fr'});
+assert.equal(frenchSaved.status,200);assert.equal((await req('a')).data.language,'fr');
+assert.deepEqual((await req('a')).data.presets,accountA.presets);
+console.log('PASS: account language persists, is isolated, validates, and preserves every preset');
