@@ -11,6 +11,7 @@ import CropCanvas from './crop-canvas';
 import Help from './help';
 import {flexiblePolicy,flexibleDefault,flexibleMaximum} from '../lib/flexible-size.mjs';
 import {clipboardImages} from '../lib/clipboard-images.mjs';
+import {readDownloadTotal,reportDownload} from '../lib/download-count.mjs';
 import {lockedPreset,imageByteLimit,assertOutput} from '../lib/export-policy.mjs';
 type Preset={id:string,name:string,width:number|null,height:number|null,fit:string,format:string,quality:number,maxKB:number,background:string,naming:string,centerX:number,centerY:number,zoom:number,byteBase:number,circle:boolean};
 type Output={url:string,bytes:Uint8Array,width:number,height:number,warning?:string,quality?:number,format:string,name:string};
@@ -20,6 +21,9 @@ const emptyPreset={...starters[0],width:null,height:null};
 function Arrow(){return <svg aria-hidden="true" className="download-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3v12m-5-5 5 5 5-5M4 17v4h16v-4"/></svg>;}
 export default function Prep({signedIn=false}:{signedIn?:boolean}){
  const [dark,setDark]=useState(false);
+ const [downloadTotal,setDownloadTotal]=useState<number|null>(null);
+ const receiveTotal=(value:number)=>setDownloadTotal(previous=>Math.max(previous??0,value));
+ useEffect(()=>{let active=true;const refresh=()=>{void readDownloadTotal().then(value=>{if(active)receiveTotal(value);}).catch(()=>{});};refresh();const timer=setInterval(()=>{if(document.visibilityState==='visible')refresh();},30000);const visible=()=>{if(document.visibilityState==='visible')refresh();};document.addEventListener('visibilitychange',visible);return()=>{active=false;clearInterval(timer);document.removeEventListener('visibilitychange',visible);};},[]);
  const addRef=useRef<(files:FileList|File[])=>void>(()=>{});addRef.current=add;
  const [mode,setMode]=useState<'single'|'batch'>('single');
  const [ratioLabel,setRatioLabel]=useState('');
@@ -27,7 +31,7 @@ export default function Prep({signedIn=false}:{signedIn?:boolean}){
  const [lang,setLang]=useState<'fr'|'en'>('fr'),[help,setHelp]=useState(false),[items,setItems]=useState<Item[]>([]),[active,setActive]=useState(''),[busy,setBusy]=useState(false),[progress,setProgress]=useState({kind:'reading',index:0,total:0}),[notice,setNotice]=useState(''),[sync,setSync]=useState<Sync>({kind:'loading'}),[revision,setRevision]=useState(0),[loaded,setLoaded]=useState(false),[newName,setNewName]=useState('');
  const worker=useRef<Worker|null>(null),pending=useRef<{id:number,resolve:Function,reject:Function}|null>(null),counter=useRef(0),generation=useRef(0),cancel=useRef(false),busyRef=useRef(false),syncingRef=useRef(false),urls=useRef(new Set<string>()),itemRef=useRef(items),languageRef=useRef<'fr'|'en'>('fr'),languageChanged=useRef(false);
  itemRef.current=items;languageRef.current=lang;
- const archive=useRef<{url:string,name:string}|null>(null);
+ const archive=useRef<{url:string,name:string,imageCount:number}|null>(null);
  const t=messages[lang],bytes=(n:number)=>byteLabel(n,lang);
  function invalidateArchive(){revoke(archive.current?.url);archive.current=null;}
  function url(data:Uint8Array,type:string){const u=URL.createObjectURL(new Blob([data as BlobPart],{type}));urls.current.add(u);return u;}
@@ -66,7 +70,7 @@ export default function Prep({signedIn=false}:{signedIn?:boolean}){
  function setImagePreset(id:string,presetId:string){if(busyRef.current||syncingRef.current)return;const preset=lockedPreset(presetId,p.format);setImageSettings(id,preset,flexiblePolicy(preset)?.ratio.label??'');setActive(id);setSelected(preset?.id??'');setP(preset??emptyPreset);setRatioLabel(flexiblePolicy(preset)?.ratio.label??'');setSync({kind:'unsaved'});}
  function choosePreset(id:string){if(busyRef.current||syncingRef.current)return;const preset=lockedPreset(id,p.format);if(current){setImagePreset(current.id,id);return;}setSelected(preset?.id??'');setP(preset??emptyPreset);setRatioLabel(flexiblePolicy(preset)?.ratio.label??'');setSync({kind:'unsaved'});}
  function applyToAll(){if(busyRef.current||syncingRef.current||!selected)return;invalidateArchive();itemRef.current.forEach(i=>revoke(i.out?.url));setItems(old=>old.map(i=>({...i,preset:{...p},ratioLabel,out:undefined,status:i.preview?'ready':i.status,...(i.preview?{error:undefined}:{})})));}
- function triggerDownload(out:{url:string,name:string}){const a=document.createElement('a');a.href=out.url;a.download=out.name;a.target='_blank';a.rel='noopener';a.style.display='none';document.body.appendChild(a);a.click();a.remove();}
+ function triggerDownload(out:{url:string,name:string,imageCount?:number}){const a=document.createElement('a');a.href=out.url;a.download=out.name;a.target='_blank';a.rel='noopener';a.style.display='none';document.body.appendChild(a);try{a.click();void reportDownload(out.imageCount??1,receiveTotal).catch(()=>{});}finally{a.remove();}}
  function exportPreset(settings:Preset|null){if(!settings)throw Error('Choose a preset first.');const preset=cleanPreset(settings);if(catalogueById.get(preset.id)?.minimumWidth&&preset.width!==null&&preset.width<catalogueById.get(preset.id).minimumWidth)throw Error('Body text images require a requested width of at least 800 px.');if(!isConfigured(preset))throw Error('This source gives flexible dimensions. Choose width and height before preparing images.');return preset;}
  async function createOutput(i:Item,preset:Preset,index:number,used:Set<string>,retained:Map<string,Output>):Promise<Output>{
   if(i.out){assertOutput(i.out.bytes,i.out,i.out.width,i.out.height);return i.out;}
@@ -93,7 +97,7 @@ export default function Prep({signedIn=false}:{signedIn?:boolean}){
   try{const result=await prepareBatch(entries,(i:Item,index:number)=>createOutput(i,exportPreset(i.preset),index,used,retained),{isCancelled:()=>cancel.current,onProgress:(index:number,total:number)=>setProgress({kind:'processing',index,total}),onError:(i:Item,e:Error)=>update(i.id,{status:'error',error:e.message})});
    if(result.cancelled){setItems(old=>old.map(i=>!i.out&&!i.error?{...i,status:'interrupted'}:i));return;}
    if(result.errors.length){setNotice('Some images could not be processed. Fix their errors and retry Download all. No ZIP was created.');return;}
-   const blob=zip(result.outputs),archiveUrl=URL.createObjectURL(blob);urls.current.add(archiveUrl);archive.current={url:archiveUrl,name:'re-img.zip'};triggerDownload(archive.current);
+   const blob=zip(result.outputs),archiveUrl=URL.createObjectURL(blob);urls.current.add(archiveUrl);archive.current={url:archiveUrl,name:'re-img.zip',imageCount:result.outputs.length};triggerDownload(archive.current);
   }finally{setWorking(false);}
  }
  function stop(){cancel.current=true;resetWorker();setNotice('Stopped. Completed outputs are kept; retry remaining images.');}
@@ -134,5 +138,6 @@ export default function Prep({signedIn=false}:{signedIn?:boolean}){
  </section></section></main>
  {notice&&<div className="notice" role="alert">{errorText(notice,lang)}<button aria-label={t.dismiss} onClick={()=>setNotice('')}>×</button></div>}
  {help&&<Help lang={lang} specification={specification} onClose={()=>setHelp(false)}/>}
+ <p className="download-counter" title={t.counterHint}>{t.totalDownloads} <span>{downloadTotal===null?'—':downloadTotal.toLocaleString(lang)}</span></p>
  </>;
 }
