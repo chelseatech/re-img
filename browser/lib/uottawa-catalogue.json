@@ -13,7 +13,8 @@
     "maximumWeight": "1MB",
     "flexible": false,
     "conflict": true,
-    "warning": "The pixel dimensions do not exactly match the stated ratio (which may be rounded or approximate). Both are retained; this recipe uses the pixel dimensions."
+    "warning": "The pixel dimensions do not exactly match the stated ratio (which may be rounded or approximate). Both are retained; this recipe uses the pixel dimensions.",
+    "frenchName": "Articles - Image de premier plan pleine largeur"
   },
   {
     "id": "uo-02",
@@ -29,7 +30,8 @@
     "maximumWeight": "200KB",
     "flexible": false,
     "conflict": false,
-    "note": "Upload a square image. The website performs the circular crop."
+    "note": "Upload a square image. The website performs the circular crop.",
+    "frenchName": "Articles - Image de l’auteur"
   },
   {
     "id": "uo-03",
@@ -41,11 +43,12 @@
     "ratio": "3:2",
     "formats": "JPEG or PNG",
     "shape": "Rectangular",
-    "maxKB": 1000,
-    "maximumWeight": "1MB",
+    "maxKB": 0,
+    "maximumWeight": null,
     "flexible": false,
     "conflict": true,
-    "warning": "The pixel dimensions do not exactly match the stated ratio (which may be rounded or approximate). Both are retained; this recipe uses the pixel dimensions."
+    "warning": "The pixel dimensions do not exactly match the stated ratio (which may be rounded or approximate). Both are retained; this recipe uses the pixel dimensions.",
+    "frenchName": "Articles - Image de l’article avec description"
   },
   {
     "id": "uo-04",
@@ -60,7 +63,8 @@
     "maxKB": 0,
     "maximumWeight": null,
     "flexible": false,
-    "conflict": false
+    "conflict": false,
+    "frenchName": "Articles - Bloc de résultats d’articles"
   },
   {
     "id": "uo-05",
@@ -71,13 +75,30 @@
     "dimensions": "Flexible",
     "ratio": "16:9, 3:2, 4:5",
     "formats": "JPEG or PNG",
-    "shape": "Rectangular/Square",
+    "shape": "Rectangular",
     "maxKB": 0,
     "maximumWeight": null,
     "flexible": true,
-    "conflict": true,
+    "conflict": false,
     "note": "Choose dimensions. Use the same size for every image in one paragraph.",
-    "warning": "The source shape includes square, but its ratio list does not include 1:1. No square size is assumed."
+    "warning": null,
+    "frenchName": "Corps du texte avec photo",
+    "selectableRatios": [
+      {
+        "label": "16:9",
+        "ratio": 1.7777777777777777
+      },
+      {
+        "label": "3:2",
+        "ratio": 1.5
+      },
+      {
+        "label": "4:5",
+        "ratio": 0.8
+      }
+    ],
+    "minimumWidth": 800,
+    "minimumOrigin": "app"
   },
   {
     "id": "uo-06",
@@ -93,7 +114,8 @@
     "maximumWeight": "200KB",
     "flexible": false,
     "conflict": true,
-    "warning": "The pixel dimensions do not exactly match the stated ratio (which may be rounded or approximate). Both are retained; this recipe uses the pixel dimensions."
+    "warning": "The pixel dimensions do not exactly match the stated ratio (which may be rounded or approximate). Both are retained; this recipe uses the pixel dimensions.",
+    "frenchName": "Carte de visite - Image"
   },
   {
     "id": "uo-07",
@@ -109,7 +131,8 @@
     "maximumWeight": null,
     "flexible": false,
     "conflict": false,
-    "note": "Upload a square image. The website performs the circular crop."
+    "note": "Upload a square image. The website performs the circular crop.",
+    "frenchName": "Appel avec titre principal et lien texte"
   },
   {
     "id": "uo-08",
@@ -125,7 +148,8 @@
     "maximumWeight": null,
     "flexible": false,
     "conflict": false,
-    "note": "Upload a square image. The website performs the circular crop."
+    "note": "Upload a square image. The website performs the circular crop.",
+    "frenchName": "Collection de fiches horizontale"
   },
   {
     "id": "uo-09",
@@ -141,7 +165,8 @@
     "maximumWeight": null,
     "flexible": false,
     "conflict": false,
-    "note": "Upload a square image. The website performs the circular crop."
+    "note": "Upload a square image. The website performs the circular crop.",
+    "frenchName": "Collection de fiches avec lien et description"
   },
   {
     "id": "uo-10",
@@ -157,7 +182,8 @@
     "maximumWeight": null,
     "flexible": false,
     "conflict": false,
-    "note": "Upload a square image. The website performs the circular crop."
+    "note": "Upload a square image. The website performs the circular crop.",
+    "frenchName": "Collection de fiches avec des liens"
   },
   {
     "id": "uo-11",
@@ -173,7 +199,8 @@
     "maximumWeight": null,
     "flexible": false,
     "conflict": false,
-    "note": "Upload a square image. The website performs the circular crop."
+    "note": "Upload a square image. The website performs the circular crop.",
+    "frenchName": "Contactez-nous avec texte"
   },
   {
     "id": "uo-12",
@@ -189,7 +216,8 @@
     "maximumWeight": null,
     "flexible": false,
     "conflict": true,
-    "warning": "The pixel dimensions do not exactly match the stated ratio (which may be rounded or approximate). Both are retained; this recipe uses the pixel dimensions."
+    "warning": "The pixel dimensions do not exactly match the stated ratio (which may be rounded or approximate). Both are retained; this recipe uses the pixel dimensions.",
+    "frenchName": "Article vedette (1)"
   },
   {
     "id": "uo-13",
@@ -218,22 +246,24 @@
         "height": 390,
         "shape": "Circular"
       }
-    ]
+    ],
+    "frenchName": "Article vedette (2)"
   },
   {
     "id": "uo-14",
     "name": "Featured articles or events (3) with images",
     "page": 14,
-    "width": 390,
+    "width": 380,
     "height": 260,
-    "dimensions": "390px by 260px",
+    "dimensions": "380px by 260px",
     "ratio": "3:2",
     "formats": "JPEG or PNG",
     "shape": "Rectangular",
     "maxKB": 0,
     "maximumWeight": null,
     "flexible": false,
-    "conflict": false
+    "conflict": false,
+    "frenchName": "Événements ou articles en vedette (3) avec images"
   },
   {
     "id": "uo-15",
@@ -249,7 +279,8 @@
     "maximumWeight": null,
     "flexible": false,
     "conflict": true,
-    "warning": "The pixel dimensions do not exactly match the stated ratio (which may be rounded or approximate). Both are retained; this recipe uses the pixel dimensions."
+    "warning": "The pixel dimensions do not exactly match the stated ratio (which may be rounded or approximate). Both are retained; this recipe uses the pixel dimensions.",
+    "frenchName": "Article en vedette avec encadré latéral"
   },
   {
     "id": "uo-16",
@@ -265,7 +296,8 @@
     "maximumWeight": null,
     "flexible": false,
     "conflict": true,
-    "warning": "The pixel dimensions do not exactly match the stated ratio (which may be rounded or approximate). Both are retained; this recipe uses the pixel dimensions."
+    "warning": "The pixel dimensions do not exactly match the stated ratio (which may be rounded or approximate). Both are retained; this recipe uses the pixel dimensions.",
+    "frenchName": "Événements en vedette avec encadré latéral"
   },
   {
     "id": "uo-17",
@@ -281,7 +313,8 @@
     "maximumWeight": null,
     "flexible": false,
     "conflict": true,
-    "warning": "The pixel dimensions do not exactly match the stated ratio (which may be rounded or approximate). Both are retained; this recipe uses the pixel dimensions."
+    "warning": "The pixel dimensions do not exactly match the stated ratio (which may be rounded or approximate). Both are retained; this recipe uses the pixel dimensions.",
+    "frenchName": "Séries en vedette (3)"
   },
   {
     "id": "uo-18",
@@ -290,14 +323,15 @@
     "width": 1920,
     "height": 700,
     "dimensions": "1920px by 700px",
-    "ratio": "16:9",
+    "ratio": "11:4",
     "formats": "JPEG or PNG",
     "shape": "Rectangular",
     "maxKB": 1000,
     "maximumWeight": "1MB",
     "flexible": false,
     "conflict": true,
-    "warning": "The pixel dimensions do not exactly match the stated ratio (which may be rounded or approximate). Both are retained; this recipe uses the pixel dimensions."
+    "warning": "The pixel dimensions do not exactly match the stated ratio (which may be rounded or approximate). Both are retained; this recipe uses the pixel dimensions.",
+    "frenchName": "Article en vedette pleine largeur"
   },
   {
     "id": "uo-19",
@@ -313,7 +347,8 @@
     "maximumWeight": "1MB",
     "flexible": false,
     "conflict": true,
-    "warning": "The pixel dimensions do not exactly match the stated ratio (which may be rounded or approximate). Both are retained; this recipe uses the pixel dimensions."
+    "warning": "The pixel dimensions do not exactly match the stated ratio (which may be rounded or approximate). Both are retained; this recipe uses the pixel dimensions.",
+    "frenchName": "Image en pleine largeur (avec fond perdu)"
   },
   {
     "id": "uo-20",
@@ -329,7 +364,8 @@
     "maximumWeight": "1MB",
     "flexible": false,
     "conflict": true,
-    "warning": "The pixel dimensions do not exactly match the stated ratio (which may be rounded or approximate). Both are retained; this recipe uses the pixel dimensions."
+    "warning": "The pixel dimensions do not exactly match the stated ratio (which may be rounded or approximate). Both are retained; this recipe uses the pixel dimensions.",
+    "frenchName": "Image de premier plan pleine largeur"
   },
   {
     "id": "uo-21",
@@ -345,15 +381,16 @@
     "maximumWeight": "1MB",
     "flexible": false,
     "conflict": true,
-    "warning": "The pixel dimensions do not exactly match the stated ratio (which may be rounded or approximate). Both are retained; this recipe uses the pixel dimensions."
+    "warning": "The pixel dimensions do not exactly match the stated ratio (which may be rounded or approximate). Both are retained; this recipe uses the pixel dimensions.",
+    "frenchName": "Image en pleine largeur"
   },
   {
     "id": "uo-22",
     "name": "Full width video",
     "page": 22,
-    "width": 1270,
-    "height": 717,
-    "dimensions": "1270px by 717px",
+    "width": 1260,
+    "height": 711,
+    "dimensions": "1260px by 711px",
     "ratio": "16:9",
     "formats": "JPEG or PNG",
     "shape": "Rectangular",
@@ -361,7 +398,8 @@
     "maximumWeight": "1MB (for Image still)",
     "flexible": false,
     "conflict": true,
-    "warning": "The pixel dimensions do not exactly match the stated ratio (which may be rounded or approximate). Both are retained; this recipe uses the pixel dimensions."
+    "warning": "The pixel dimensions do not exactly match the stated ratio (which may be rounded or approximate). Both are retained; this recipe uses the pixel dimensions.",
+    "frenchName": "Vidéo en pleine largeur"
   },
   {
     "id": "uo-23",
@@ -369,14 +407,16 @@
     "page": 23,
     "width": null,
     "height": null,
-    "dimensions": "Variable based on browser dimensions",
+    "dimensions": "Variable based on browser dimensions (960px by 700px)",
     "ratio": "Variable based on browser dimensions",
     "formats": "JEPG or PNG",
     "shape": "Variable",
     "maxKB": 1000,
     "maximumWeight": "1MB",
     "flexible": true,
-    "conflict": false
+    "conflict": false,
+    "frenchName": "Bannière de premier plan divisée - vidéo",
+    "note": "Variable size. 960 x 700 is a source example, not a fixed requirement."
   },
   {
     "id": "uo-24",
@@ -392,7 +432,8 @@
     "maximumWeight": null,
     "flexible": false,
     "conflict": false,
-    "note": "Upload a square image. The website performs the circular crop."
+    "note": "Upload a square image. The website performs the circular crop.",
+    "frenchName": "Information list block"
   },
   {
     "id": "uo-25",
@@ -407,7 +448,8 @@
     "maxKB": 0,
     "maximumWeight": null,
     "flexible": false,
-    "conflict": false
+    "conflict": false,
+    "frenchName": "Galerie vidéo"
   },
   {
     "id": "uo-26",
@@ -423,7 +465,8 @@
     "maximumWeight": null,
     "flexible": false,
     "conflict": false,
-    "note": "Upload a square image. The website performs the circular crop."
+    "note": "Upload a square image. The website performs the circular crop.",
+    "frenchName": "Blocs de liens rapides"
   },
   {
     "id": "uo-27",
@@ -440,7 +483,15 @@
     "flexible": true,
     "conflict": true,
     "note": "Variable size; source recommends at least 500 px wide. Ratios change by breakpoint.",
-    "warning": "The source prose calls medium/larger layouts vertical, but lists 5:4. Keep the printed ratio and verify the intended orientation."
+    "warning": "The source prose calls medium/larger layouts vertical, but lists 5:4. Keep the printed ratio and verify the intended orientation.",
+    "frenchName": "Blocs de liens rapides avec onglets et images",
+    "selectableRatios": [
+      {
+        "label": "1.6:1",
+        "ratio": 1.6
+      }
+    ],
+    "recommendedWidth": 500
   },
   {
     "id": "uo-28",
@@ -456,7 +507,8 @@
     "maximumWeight": null,
     "flexible": false,
     "conflict": false,
-    "note": "Upload a square image. The website performs the circular crop."
+    "note": "Upload a square image. The website performs the circular crop.",
+    "frenchName": "Blocs de liens rapides avec onglets et couleurs secondaires"
   },
   {
     "id": "uo-29",
@@ -472,7 +524,22 @@
     "maximumWeight": null,
     "flexible": false,
     "conflict": false,
-    "note": "The displayed crop changes by breakpoint; retain the upload dimensions and keep the focal point safe."
+    "note": "The displayed crop changes by breakpoint; retain the upload dimensions and keep the focal point safe.",
+    "frenchName": "Fiche de citation",
+    "displayGuides": [
+      {
+        "label": "S · 1:1",
+        "ratio": 1
+      },
+      {
+        "label": "M · 3:1",
+        "ratio": 3
+      },
+      {
+        "label": "L/XL · 1.2:1",
+        "ratio": 1.2
+      }
+    ]
   },
   {
     "id": "uo-30",
@@ -488,15 +555,26 @@
     "maximumWeight": null,
     "flexible": false,
     "conflict": false,
-    "note": "The displayed crop changes by breakpoint; retain the upload dimensions and keep the focal point safe."
+    "note": "The displayed crop changes by breakpoint; retain the upload dimensions and keep the focal point safe.",
+    "frenchName": "Related articles (2)",
+    "displayGuides": [
+      {
+        "label": "S/M · 1:1",
+        "ratio": 1
+      },
+      {
+        "label": "L/XL · 3:2",
+        "ratio": 1.5
+      }
+    ]
   },
   {
     "id": "uo-31",
     "name": "Section header with image",
     "page": 31,
-    "width": 600,
-    "height": 450,
-    "dimensions": "600px by 450px",
+    "width": 610,
+    "height": 487,
+    "dimensions": "610px by 487px",
     "ratio": "0.8:1",
     "formats": "JPEG or PNG",
     "shape": "Rectangular",
@@ -504,23 +582,37 @@
     "maximumWeight": null,
     "flexible": false,
     "conflict": true,
-    "warning": "The pixel dimensions do not exactly match the stated ratio (which may be rounded or approximate). Both are retained; this recipe uses the pixel dimensions."
+    "warning": "The pixel dimensions do not exactly match the stated ratio (which may be rounded or approximate). Both are retained; this recipe uses the pixel dimensions.",
+    "frenchName": "En-tête de section avec image"
   },
   {
     "id": "uo-32",
     "name": "Social Feed",
     "page": 32,
-    "width": 400,
-    "height": 600,
-    "dimensions": "400px by 600px",
-    "ratio": "4:5",
+    "width": 390,
+    "height": 390,
+    "dimensions": "390px by 390px; 390px by 487px",
+    "ratio": "1:1; stated 5:4 for portrait",
     "formats": "JPEG or PNG",
     "shape": "Square/Rectangular",
     "maxKB": 0,
     "maximumWeight": null,
     "flexible": false,
     "conflict": true,
-    "warning": "The pixel dimensions do not exactly match the stated ratio (which may be rounded or approximate). Both are retained; this recipe uses the pixel dimensions."
+    "warning": "The portrait dimensions govern export; the stated 5:4 label conflicts with 390 x 487 pixels.",
+    "frenchName": "Réseaux sociaux",
+    "sizes": [
+      {
+        "label": "390 × 390",
+        "width": 390,
+        "height": 390
+      },
+      {
+        "label": "390 × 487",
+        "width": 390,
+        "height": 487
+      }
+    ]
   },
   {
     "id": "uo-33",
@@ -536,15 +628,16 @@
     "maximumWeight": "1MB",
     "flexible": true,
     "conflict": false,
-    "note": "Variable size. 960 × 700 is a source example, not a fixed requirement."
+    "note": "Variable size. 960 × 700 is a source example, not a fixed requirement.",
+    "frenchName": "Bannière de premier plan divisée"
   },
   {
     "id": "uo-34",
     "name": "Static content block (3)",
     "page": 34,
-    "width": 393,
-    "height": 253,
-    "dimensions": "393px by 253px",
+    "width": 390,
+    "height": 273,
+    "dimensions": "390px by 273px",
     "ratio": "1.43:1",
     "formats": "JPEG or PNG",
     "shape": "Rectangular",
@@ -552,6 +645,7 @@
     "maximumWeight": null,
     "flexible": false,
     "conflict": true,
-    "warning": "The pixel dimensions do not exactly match the stated ratio (which may be rounded or approximate). Both are retained; this recipe uses the pixel dimensions."
+    "warning": "The pixel dimensions do not exactly match the stated ratio (which may be rounded or approximate). Both are retained; this recipe uses the pixel dimensions.",
+    "frenchName": "Galerie de contenu statique (3)"
   }
 ]

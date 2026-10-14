@@ -4,3 +4,7 @@
 
 .batch-zone{display:flex;align-items:center;gap:8px;min-width:0}.batch-zone .secondary{font-size:16px;padding:6px 8px;flex:none}@media(max-width:720px){footer .batch-zone .secondary{width:auto}.batch-zone .batch-status{min-width:0;overflow-wrap:anywhere}}
 @media(max-width:480px){.settings>.controls{grid-column:1/-1}}
+
+.image-size-warning{color:#a11313;background:#fff0f0;border-left:4px solid #b91c1c;margin:8px 0;padding:6px;font-size:16px;font-weight:750;overflow-wrap:anywhere}.filename-control{font-size:16px;margin-top:8px}.filename-control input{font-size:16px}.image-export-name{overflow-wrap:anywhere}.sidebar-zip{width:100%;margin-top:10px;white-space:normal;font-size:16px}.batch-zone:empty{display:none}@media(max-width:720px){footer>.download-action{grid-row:2}footer:has(.batch-zone:empty)>.download-action{grid-row:1}.queue .sidebar-zip{max-width:100%}}
+
+.ratio-control,.source-guidance{grid-column:1/-1}.ratio-control{margin-top:8px}.source-guidance,.guide-caption{color:#334155;font-size:16px;line-height:1.45;margin-top:7px}.guide-caption{font-weight:700}.guide-caption+ .image-info{margin-top:4px}

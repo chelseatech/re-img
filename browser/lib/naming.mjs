@@ -4,6 +4,14 @@ export function safePart(text,maxBytes=70){
   for(const char of clean){const length=encoder.encode(char).length;if(size+length>maxBytes)break;part+=char;size+=length;}
   return part||'image';
 }
+export function filenameStem(text,fallback='image'){
+  const leaf=String(text??'').split(/[\\/]/).pop().replace(/\.(?:jpe?g|png|webp|gif|heic|tiff?|bmp|svg|zip)$/i,'');
+  return safePart(leaf||fallback);
+}
+export function imageFilename(stem,source,width,height,format,sequence,used=new Set()){
+  const base=filenameStem(stem||source,filenameStem(source));
+  return filename('{name}-{width}x{height}.{format}',`${base}.bin`,width,height,format,'',sequence,used);
+}
 export function filename(template,source,width,height,format,preset,sequence,used=new Set()){
   const ext=format==='jpeg'?'jpg':format;
   const tokens={name:safePart(source.replace(/\.[^.]*$/,'')),width,height,format:ext,preset:safePart(preset),sequence:String(sequence).padStart(2,'0')};
