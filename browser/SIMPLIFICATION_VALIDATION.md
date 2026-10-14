@@ -1,10 +1,11 @@
-# Simplification release candidate — not published
+# Simplification release — version 10 published
 
-Prepared on BEAST, 2026-10-14. Public version 9 remains live at https://re-image.chelsea-tech-2945.chatgpt.site. Version 10 was saved only; no deployment call was made because ordinary OS-file import QA is required and blocked.
+Published on BEAST, 2026-10-14, at https://re-image.chelsea-tech-2945.chatgpt.site with the existing public audience. Ryan explicitly chose to publish now and manually test dragging files into the live site; that remaining manual test no longer blocks publication.
 
 - App commit: `f41087f10f8d1e46ee8b85abada39d669ed11f71`, verified exact remote SHA on `feat/re-image-browser`.
 - Sites source: `c2a5a1532ff74687b108762c73c231857fd2e977`.
-- Saved version 10: `appgprj_6ace73957edc8191937355a7461c00ef~appgver_dcda5bede1cc8191a3ff90f64ddf05ee`; `deployment_id: null`.
+- Saved version 10: `appgprj_6ace73957edc8191937355a7461c00ef~appgver_dcda5bede1cc8191a3ff90f64ddf05ee`.
+- Successful deployment: `appgdep_6acfc7ddf2c8819192e614db1bb98fa3`, confirmed 2026-10-14 18:20 UTC.
 - Archive: task workspace `reimg-simplification-candidate.tar.gz`, SHA256 `de0e3cf1a78390ad2a1013f31d15e58518a7e135e7d006a5aa1555b77444fe84`.
 
 Implemented requested scope:
@@ -31,7 +32,9 @@ Passed verification:
 - Dense lossless PNG individual and ZIP fail without a download. Dense JPG automatically compresses within the cap at exact1920x717. No silent resizing or format conversion.
 - Chrome local preview at390px and1280px: Single/Batch, light/dark, no horizontal overflow, read-only dimensions, removed controls and neutral canvas. Both help languages and source hrefs checked. Escape and close buttons work.
 
-Remaining required QA / blockers:
+Hosted verification passed: anonymous root 200 with read-only dimensions, JPG/PNG labels, theme toggle, and no removed controls; preference GET/PUT 401, forged identity headers rejected, no owner data in anonymous HTML. Signed-in Chrome loaded the existing owner preset without a production preference write. Single/Batch and dark theme worked on the live release. Screenshot: task workspace `reimg-v10-live-dark.png`.
+
+Remaining verification limits:
 
 - Actual chooser test attempted against `browser/work/ordinary600.png`. Chrome rejected it because the ChatGPT extension has "Allow access to file URLs" disabled. No permission changes or bypass were attempted. Enable it in chrome://extensions → ChatGPT extension Details to allow file-based browser QA. Native Windows app/Explorer drag automation is unavailable in this execution environment, so an ordinary OS drag in Single and Batch still needs a manual check. Synthetic handler tests are explicitly not equivalent to that check.
 - Automatic approval review rejected inspecting the official French URL when it redirected to login.microsoftonline.com: no authority to observe that sign-in origin was granted. The requested literal FR/EN links are present, but protected source content is unverified. No bypass or sign-in attempted.
