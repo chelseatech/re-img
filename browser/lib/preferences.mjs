@@ -9,7 +9,8 @@ export function isConfigured(p){return Number.isInteger(p.width)&&p.width>0&&Num
 export function cleanPreset(p){
   if(!p || typeof p!=='object')throw Error('Invalid preset');
   const source=catalogueById.get(p.id);
-  const n=(k,min,max)=>{if(source?.flexible&&['width','height'].includes(k)&&p[k]===null)return null;if(!Number.isFinite(p[k])||p[k]<min||p[k]>max||!Number.isInteger(p[k]))throw Error(`Invalid ${k}`);return p[k];};
+  // Retain old unset sizes in saved data when a formerly flexible recipe gains an app output size.
+  const n=(k,min,max)=>{if((source?.flexible||source?.acceptsLegacyUnsetSize)&&['width','height'].includes(k)&&p[k]===null)return null;if(!Number.isFinite(p[k])||p[k]<min||p[k]>max||!Number.isInteger(p[k]))throw Error(`Invalid ${k}`);return p[k];};
   const str=(k,max)=>{if(typeof p[k]!=='string'||!p[k].trim()||p[k].length>max)throw Error(`Invalid ${k}`);return p[k];};
   if(!formats.includes(p.format)||!['crop','contain'].includes(p.fit)||!/^#[a-f\d]{6}$/i.test(p.background))throw Error('Invalid export settings');
   if(source&&p.format==='webp')throw Error('This catalogue permits JPEG or PNG only.');

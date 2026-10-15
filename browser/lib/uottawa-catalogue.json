@@ -405,18 +405,19 @@
     "id": "uo-23",
     "name": "Homepage hero",
     "page": 23,
-    "width": null,
-    "height": null,
-    "dimensions": "Variable based on browser dimensions (960px by 700px)",
+    "width": 1000,
+    "height": 667,
+    "dimensions": "Variable based on browser dimensions",
     "ratio": "Variable based on browser dimensions",
     "formats": "JEPG or PNG",
     "shape": "Variable",
     "maxKB": 1000,
     "maximumWeight": "1MB",
-    "flexible": true,
+    "flexible": false,
+    "acceptsLegacyUnsetSize": true,
     "conflict": false,
-    "frenchName": "Bannière de premier plan divisée - vidéo",
-    "note": "Variable size. 960 x 700 is a source example, not a fixed requirement."
+    "frenchName": "Bannière de la page d’accueil",
+    "note": "The source specifies a responsive display, not fixed export dimensions. Ryan's re-img setting exports exactly 1000 x 667 px. The source 1 MB limit remains."
   },
   {
     "id": "uo-24",
@@ -488,7 +489,13 @@
     "selectableRatios": [
       {
         "label": "1.6:1",
-        "ratio": 1.6
+        "ratio": 1.6,
+        "breakpoint": "S"
+      },
+      {
+        "label": "5:4",
+        "ratio": 1.25,
+        "breakpoint": "larger"
       }
     ],
     "recommendedWidth": 500
