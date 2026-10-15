@@ -51,7 +51,10 @@ function borders(area,empty,kind){
   assert.equal(total,kind==='central'?10:['Top','Bottom'].includes(side)?18:12,kind+' keeps the same border plus padding inset');
  }
  if(empty)assert.equal(css.borderTopColor,document.documentElement.dataset.theme==='dark'?'rgb(204, 227, 250)':'rgb(16, 47, 75)');
- assert.equal(area.getAttribute('tabindex'),'0','drop/paste focus target remains enabled');
+ if(empty&&kind==='central'){
+  assert.equal(area.getAttribute('role'),'group');assert.equal(area.tabIndex,-1,'empty surface does not duplicate its button tab stop');
+  const button=area.querySelector('.empty-select-files');assert.ok(button&&!button.disabled);assert.equal(button.tabIndex,0);button.focus();assert.equal(document.activeElement,button,'empty drop/paste focus moves to the native picker button');
+ }else assert.equal(area.getAttribute('tabindex'),'0','loaded or sidebar drop/paste focus target remains enabled');
 }
 function drop(files,target=central()){
  const event=new w.Event('drop',{bubbles:true,cancelable:true});Object.defineProperty(event,'dataTransfer',{value:{types:['Files'],files}});

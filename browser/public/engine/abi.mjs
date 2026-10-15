@@ -1,4 +1,6 @@
+import {assertInputSize} from './input-policy.mjs';
 export function execute(engine,input,request) {
+  assertInputSize(input.byteLength);
   const opts=new TextEncoder().encode(JSON.stringify(request));
   const a=engine.allocate(input.length), b=engine.allocate(opts.length);
   let result;

@@ -49,7 +49,8 @@ function choose(input,files){
 }
 function key(target,value,repeat=false){const event=new w.KeyboardEvent('keydown',{key:value,repeat,bubbles:true,cancelable:true});target.dispatchEvent(event);return event;}
 function assertEmpty(multiple){
- assert.equal(area().getAttribute('role'),'button');assert.equal(area().getAttribute('aria-disabled'),'false');assert.equal(area().getAttribute('tabindex'),'0');
+ assert.equal(area().getAttribute('role'),'group');assert.equal(area().getAttribute('aria-disabled'),'false');assert.equal(area().getAttribute('tabindex'),'-1');
+ assert.equal(area().querySelectorAll('button').length,1);assert.equal(area().querySelector('button').type,'button');assert.equal(area().querySelector('button').disabled,false);
  assert.ok(area().classList.contains('is-empty'));assert.equal(w.getComputedStyle(area()).borderTopWidth,'4px');assert.equal(w.getComputedStyle(area()).borderTopStyle,'dashed');assert.equal(w.getComputedStyle(area()).cursor,'pointer');
  assert.ok(picker().hidden);assert.equal(picker().type,'file');assert.equal(picker().tabIndex,-1);assert.equal(picker().multiple,multiple);assert.equal(picker().disabled,false);
  assert.equal(document.querySelector('.single-import'),null,'duplicate Single import control is removed');
@@ -61,18 +62,20 @@ function drop(files,target=area()){const event=new w.Event('drop',{bubbles:true,
 function paste(files,target=area()){const event=new w.Event('paste',{bubbles:true,cancelable:true});Object.defineProperty(event,'clipboardData',{value:{items:files.map(file=>({kind:'file',type:file.type,getAsFile:()=>file})),files}});target.dispatchEvent(event);assert.ok(event.defaultPrevented);}
 async function checkBusyGuard(){
  await until(()=>workerTasks.length>0&&area().getAttribute('aria-disabled')==='true','empty preview reading guard');
- assert.equal(area().getAttribute('role'),'button');assert.equal(area().tabIndex,-1);assert.equal(picker().disabled,true);assert.equal(w.getComputedStyle(area()).cursor,'default');
+ assert.equal(area().getAttribute('role'),'group');assert.equal(area().tabIndex,-1);assert.equal(picker().disabled,true);assert.equal(w.getComputedStyle(area()).cursor,'default');
  const before=pickerClicks.length;area().click();key(area(),'Enter');key(area(),' ');area().querySelector('.empty p').click();assert.equal(pickerClicks.length,before,'busy pointer and keyboard activations do not open picker');
 }
 
 try{
  await ready();assertEmpty(false);
- assert.equal(area().getAttribute('aria-label'),'Glissez vos images ici ou cliquez pour choisir');assert.equal(area().querySelector('.empty p').textContent,'Glissez vos images ici ou cliquez pour choisir');
- let before=pickerClicks.length;area().click();assert.equal(pickerClicks.length,before+1,'area click opens its picker once');assert.equal(pickerClicks.at(-1),picker());assert.equal(document.activeElement,area());
+ assert.equal(area().getAttribute('aria-label'),'Glissez vos images ici ou cliquez pour choisir');assert.equal(area().querySelector('.empty p').textContent,'Déposez les fichiers à importer');
+ let before=pickerClicks.length;area().click();assert.equal(pickerClicks.length,before+1,'area click opens its picker once');assert.equal(pickerClicks.at(-1),picker());assert.equal(document.activeElement,area().querySelector('.empty-select-files'));
  before=pickerClicks.length;area().querySelector('.empty p').click();assert.equal(pickerClicks.length,before+1,'nested empty label click opens picker exactly once');
- for(const activation of ['Enter',' ']){before=pickerClicks.length;assert.equal(key(area(),activation).defaultPrevented,true);assert.equal(pickerClicks.length,before+1);before=pickerClicks.length;assert.equal(key(area(),activation,true).defaultPrevented,true);assert.equal(pickerClicks.length,before,'repeated activation key does not reopen');}
+ // Native button Enter/Space activation needs a browser; jsdom does not synthesize its default click.
+ before=pickerClicks.length;area().querySelector('.empty-select-files').click();assert.equal(pickerClicks.length,before+1,'one real button click opens once without parent bubbling');
+ for(const activation of ['Enter',' ','Spacebar']){before=pickerClicks.length;assert.equal(key(area(),activation).defaultPrevented,false);key(area(),activation,true);assert.equal(pickerClicks.length,before,'noninteractive parent has no custom keyboard activation');}
  for(const other of ['Escape','Tab','ArrowLeft','a']){before=pickerClicks.length;assert.equal(key(area(),other).defaultPrevented,false);assert.equal(pickerClicks.length,before,'unrelated key does not activate');}
- before=pickerClicks.length;assert.equal(key(area(),'Spacebar').defaultPrevented,true);assert.equal(pickerClicks.length,before+1,'React normalizes legacy Spacebar to the activation Space key');
+
  before=pickerClicks.length;key(area().querySelector('canvas'),'Enter');key(area().querySelector('canvas'),' ');assert.equal(pickerClicks.length,before,'bubbled child keyboard event is not treated as button activation');
  const source=await sharp({create:{width:160,height:100,channels:4,background:{r:20,g:80,b:160,alpha:.7}}}).png().toBuffer(),image=name=>new File([source],name,{type:'image/png'}),sameFile=image('same-file.png');
  const previewsBeforeCancel=previewRequests;choose(picker(),[]);await tick();assertEmpty(false);assert.equal(previewRequests,previewsBeforeCancel,'cancel selection imports nothing');
@@ -87,12 +90,12 @@ try{
  await clear();await mode(0);assertEmpty(false);before=pickerClicks.length;drop([image('dropped.png'),image('drop-ignored.png')]);await drain('Single drop');assertLoaded();assert.equal(document.querySelector('.source-filename').textContent,'dropped.png');paste([image('single-pasted.png')]);await drain('loaded Single paste');assert.equal(document.querySelector('.source-filename').textContent,'single-pasted.png');await mode(1);assert.deepEqual(names(),['dropped.png','single-pasted.png']);
  drop([image('batch-drop-1.png'),image('batch-drop-2.png')],document.querySelector('.upload-drop-box'));await drain('loaded Batch drop');paste([image('batch-paste-1.png'),image('batch-paste-2.png')],document.querySelector('.upload-drop-box'));await drain('loaded Batch paste');assert.equal(rows().length,6);assert.equal(pickerClicks.length,before,'drop/paste imports never click a picker');
  await clear();assertEmpty(true);assert.equal(urls.size,0,'all-clear revokes the preview URLs');
- const english=[...document.querySelectorAll('button')].find(button=>button.getAttribute('aria-label')==='Passer en anglais');english.click();await tick();assert.equal(area().getAttribute('aria-label'),'Drag images here or click to choose');assert.equal(area().querySelector('.empty p').textContent,'Drag images here or click to choose');assert.equal(picker().getAttribute('aria-label'),'Add images');
+ const english=[...document.querySelectorAll('button')].find(button=>button.getAttribute('aria-label')==='Passer en anglais');english.click();await tick();assert.equal(area().getAttribute('aria-label'),'Drag images here or click to choose');assert.equal(area().querySelector('.empty p').textContent,'Drop files to upload');assert.equal(picker().getAttribute('aria-label'),'Add images');
  [...document.querySelectorAll('button')].find(button=>button.getAttribute('aria-label')==='Switch to French').click();await tick();assert.equal(area().getAttribute('aria-label'),'Glissez vos images ici ou cliquez pour choisir');assert.equal(picker().getAttribute('aria-label'),'Ajouter des images');
  for(const theme of ['light','dark']){if(document.documentElement.dataset.theme!==theme){document.querySelector('.theme-toggle').click();await tick();}assert.equal(document.documentElement.dataset.theme,theme);assertEmpty(true);area().focus();assert.equal(document.activeElement,area());}
  const rules=[...document.styleSheets].flatMap(sheet=>[...sheet.cssRules]);
  const focus=rules.find(rule=>rule.selectorText==='.image-drop-target:focus-within');assert.ok(focus);assert.equal(focus.style.getPropertyValue('outline'),'3px solid #005fcc');assert.equal(focus.style.getPropertyValue('outline-offset'),'3px');
  const darkFocus=rules.find(rule=>rule.selectorText==='html[data-theme=dark] .image-drop-target:focus-within');assert.ok(darkFocus);assert.equal(darkFocus.style.getPropertyValue('outline-color'),'rgb(255, 214, 112)');
  assert.equal(document.querySelector('.download-counter span').textContent,'0');
- console.log('PASS actual Prep/CSS/WASM empty picker: pointer/child click once; Enter/Space, repeat and unrelated/child keys; busy aria/disabled guard; Single first/Batch all; cancel and same-File reselect; empty/loaded roles/borders; loaded crop exclusion; New image selection/queue retention; drop/paste preservation; exact FR/EN labels; both themes and existing focus declarations. No OS picker/native clipboard/live HTTP/events/DB; jsdom does not prove native dialog or painted focus.');
+ console.log('PASS actual Prep/CSS/WASM empty picker: pointer/child/native button click once; noninteractive parent and native button semantics; unrelated/child keys; busy aria/disabled guard; Single first/Batch all; cancel and same-File reselect; empty/loaded roles/borders; loaded crop exclusion; New image selection/queue retention; drop/paste preservation; exact FR/EN labels; both themes and existing focus declarations. No OS picker/native clipboard/live HTTP/events/DB; jsdom does not prove native dialog or painted focus.');
 }finally{root.unmount();dom.window.close();}
