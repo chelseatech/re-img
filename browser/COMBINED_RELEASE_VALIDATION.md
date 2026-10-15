@@ -18,4 +18,13 @@ Combined validation passed:
 
 Testing uses actual React/WASM under jsdom and production CSS. No shared browser UI was used, avoiding the concurrent FHS task. Painted layout/canvas, native picker/save prompts, physical touch/drag and Safari were not newly verified. Tests use controlled fixtures and no production counter events or account-data writes. Hosted checks will compare the deployed assets to the exact tested build using GET requests only.
 
-Publication evidence will be appended after deployment.
+Published as **version 16** at https://re-image.chelsea-tech-2945.chatgpt.site. Sites confirmed the unchanged public audience and owner role after successful deployment.
+
+- Tested application commit: `42534dc09fae2cbb6519cf0c5ec9d4bce4644bb2`, pushed and verified exactly on `feat/re-image-browser` before publication.
+- Sites source commit: `4b845039da43f0438b9e11fb6040b65f509cc70e`.
+- Saved version: `appgprj_6ace73957edc8191937355a7461c00ef~appgver_d78fc9bebd9c8191a3d7f66973f7e740`.
+- Archive: `sha256:7ef67f99200a44c19f8e46a8b85a189fc43294fede91238c8118f3213dd91474`.
+- Deployment: `appgdep_6ad0da4200c481919d05946f4c197da8`, native status `succeeded`, updated `2026-10-15T13:51:11.799581+00:00`.
+- Hosted GET checks: root200, six referenced CSS/JS files byte-identical to tested build; both ratio/hero configuration and approved dark color present; newer Select Files/50MB draft absent. Counter200/no-store with valid total4 at verification; owner preferences401 and spoofed identity401; exact original icon hash. No synthetic production POSTs.
+
+The documentation follow-up commit records publication only. Its source changes are not needed for the already verified runtime deployment.

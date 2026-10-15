@@ -2,6 +2,8 @@
 
 Prepared locally on BEAST on 2026-10-15 at Ryan's request. This change is not published or pushed. The live Site remains version 15 at https://re-image.chelsea-tech-2945.chatgpt.site. The separate dark-outline candidate remains outside this repository and is excluded.
 
+Later on 2026-10-15, Ryan approved publication together with the dark-border candidate. Published as version 16; see `COMBINED_RELEASE_VALIDATION.md` for exact commits and deployment evidence. The preparation record below describes the earlier local-only validation boundary.
+
 ## Source and behavior
 
 The archived authoritative extraction is `src/uottawa-specifications.json`, retrieved 2026-10-10 from VirtuO Image specifications. It provides no publication/revision date. This task reconciled that existing extraction rather than claiming a fresh authenticated source review.
