@@ -31,3 +31,20 @@ header{display:block;padding:0}.header-inner{min-height:58px;display:flex;justif
 .download-counter{position:fixed;right:12px;bottom:6px;font-size:12px;font-weight:500;line-height:1.5;padding:2px 5px;background:#e9edf1ef;color:#334155;pointer-events:none;z-index:2}body{padding-bottom:32px}html[data-theme=dark] .download-counter{background:#111a24ef;color:#bccddd}@media(max-width:720px){.download-counter{right:5px;bottom:4px;font-size:11px}}
 
 .image-drop-target.is-empty:not([aria-disabled=true]){cursor:pointer}.image-drop-target[role=button][aria-disabled=true]{cursor:default}
+
+/* Softer dark decorative borders. */
+html[data-theme=dark] header,
+html[data-theme=dark] .help-heading {
+  border-bottom-color: #7c91a6;
+}
+
+html[data-theme=dark] .panel,
+html[data-theme=dark] .help-dialog {
+  border-color: #7c91a6;
+}
+
+html[data-theme=dark] .ready-output,
+html[data-theme=dark] .help-content > section:not(.help-modes),
+html[data-theme=dark] .help-content > details {
+  border-top-color: #7c91a6;
+}
