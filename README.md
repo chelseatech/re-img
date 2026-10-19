@@ -1,60 +1,100 @@
-# Web image prep
+# re-img
 
-First Windows desktop prototype source for Beast. Tauri 2 shell, vanilla JavaScript/Vite interface, Rust image-processing core. **Not compiled, launched, or runtime-validated in this session.** The execution helper fails before starting PowerShell.
+Browser-based image preparation for uOttawa web content. Crop, resize and compress images to component presets, then download JPG/PNG files individually or as a ZIP. Created by Ryan O’Connor.
 
-## Launch on Beast
+**Status: ready for internal rollout.** The browser app is published and available at **[Open re-img](https://re-image.chelsea-tech-2945.chatgpt.site/)**. Latest recorded deployment: **version 17, October 15, 2026**. README reviewed against the live interface and release records on October 19, 2026.
 
-From `C:\Users\Ryan\Documents\Codex\2026-10-08\task-2\web-image-prep`:
+No desktop installation is needed for the hosted app. French is the default; English and light/dark themes are available.
 
-```powershell
-Get-Command rustc,cargo,node,npm
-rustc --version
-node --version
-npm install
-npm run icons
-npm run check
-npm run build
-cargo test --manifest-path crates/prep-core/Cargo.toml
-cargo check --manifest-path src-tauri/Cargo.toml
-npm run tauri -- dev
-```
+## Source and release status
 
-Use Node 22 LTS or a current supported LTS and Rust 1.85 or newer. Windows Tauri also requires Microsoft C++ Build Tools and WebView2. Inspect installed prerequisites before installing anything; none were installed here. See [official Tauri Windows prerequisites](https://v2.tauri.app/start/prerequisites/). `npm install` and Cargo dependency resolution require registry access. Version locks must be generated and retained after the first successful dependency resolution. Build packaging is disabled; this is a development prototype.
+| Item | Current status |
+| --- | --- |
+| Hosted browser app | Published version 17; ready for internal rollout |
+| Browser source | [feat/re-image-browser](https://github.com/chelseatech/re-img/tree/feat/re-image-browser), in the browser/ directory |
+| Default branch | Apart from this README, main still contains the original Windows/Tauri 0.1.1 prototype; the browser work has not been merged |
+| Desktop app | Separate development path; no GitHub release is published |
+| Access | Latest deployment record confirms a public audience. Internal rollout describes intended use, not enforced access restriction |
 
-`npm.cmd run icons` generates the local Windows ICO and RGBA PNG assets from `assets/app-icon.svg` using the already-installed Tauri CLI. Run it before the first Tauri build, including development builds: Windows resource generation requires `src-tauri/icons/icon.ico` even when installer bundling is disabled. The CLI also supplies the standard PNG sizes and ICNS asset expected by Tauri's default scaffold. See [official Tauri icon generation](https://v2.tauri.app/develop/icons/). No icon download or extra dependency is required.
+The hosted deployment and GitHub branches are separate. Updating this README does not deploy code, merge branches or change access. Use the browser branch for current app development; a checkout of main does not contain the hosted app.
 
-## First-use workflow
+## Using re-img
 
-1. Add images with the Windows file picker or drop them into the native window. Up to 100 files; input resource limits are 100 MB / 64 megapixels per file, with a 256 MiB decode allocation limit.
-2. Choose a profile. Width, height and maximum size are editable and saved locally for the next launch. Crop positions and zoom are per image for the current session. Batch export uses the current profile for all imported images.
-3. Drag the crop or use arrow keys (Shift moves faster). Zoom tightens the crop. Circle overlays are guides only; files remain square when using the square portrait/card profiles.
-4. Choose JPEG for photographs, PNG for transparency or graphics. Custom profiles can export lossless WebP. The image crate does not offer lossy WebP; this prototype does not present a misleading lossy quality control. libwebp would be a separate future dependency if lossy WebP is needed.
-5. Choose an existing output folder and export. Each file shows processing, success or a specific error. Hover its result for the destination or full error.
+1. Open the app and choose a component preset. Output resolution is displayed as locked text; flexible presets offer supported crop ratios.
+2. Add a still image with **Select Files**, drag and drop, or paste with **Ctrl+V / ⌘V** while the image area is active.
+3. Move the crop frame by dragging or with arrow keys. Drag a corner, or use **+ / −**, to resize it. Circle overlays are guides; exported files remain square.
+4. Choose **JPG (photos)** or **PNG (graphics)**. Edit the base filename if needed; the final filename is shown, with an optional dimensions suffix.
+5. Download the displayed image. For several images, switch to **Batch mode**, adjust each image, and download individually or use **Download all as a ZIP file**. **Apply to all images** copies current settings while preserving names and crops.
 
-## Starter presets
+Single mode is the default. Switching modes preserves the current image queue, filenames, presets and crops. In Single mode, only the first dropped/pasted image is used; Batch mode accepts multiple images. The built-in **? Help** explains the workflow and selected preset in both languages.
 
-| Profile | Output pixels | Maximum file size | Preview |
-| --- | --- | --- | --- |
-| Article image | 830 × 553 | 1,000,000 bytes | Rectangle |
-| Article / event card | 390 × 260 | Unset | Rectangle |
-| Author portrait | 80 × 80 | 200,000 bytes | Circle; square output |
-| Circular card | 200 × 200 | Unset | Circle; square output |
+Downloads follow the browser’s normal folder and save-prompt settings. Images and unsaved edits are session data: download your results before closing or reloading the tab.
 
-uOttawa output is JPEG or PNG only. Decimal convention: 1 KB = 1,000 bytes, 1 MB = 1,000,000 bytes. Binary units differ: 1 KiB = 1,024 bytes, 1 MiB = 1,048,576 bytes. There is no universal output cap. 0 in the UI means no cap. The full-bleed hero (1920 × 700 with contradictory 2.21:1 label) and business card (610 × 763 with contradictory 5:4 label) are intentionally excluded until verified.
+## Formats, dimensions and limits
 
-## Processing guarantees and limitations
+| Rule | Browser app behavior |
+| --- | --- |
+| Input | Still JPEG, PNG and WebP |
+| Output | JPG or PNG; JPG uses a white background for transparency, PNG preserves alpha |
+| Maximum input file | 50 MB (50,000,000 bytes), inclusive |
+| Batch size | Up to 50 images |
+| Output size limit | 1,200,000 bytes per image; Homepage hero uses 1,000,000 bytes |
+| Fixed presets | Exact prescribed output dimensions; small crops may be enlarged with a warning |
+| Body text with image | Up to 800 px wide, native crop size without enlargement |
+| Quick links with tabs and images | Up to 1200 px wide, without enlargement; 500 px recommended minimum; supported responsive ratios available |
+| Homepage hero | Fixed 1000 × 667 px, a re-img setting |
 
-- Source files are read only. Derivatives use a `-web-WIDTHxHEIGHT` suffix and atomic `create_new` reservation. Existing names gain numeric suffixes, including in the source directory. Originals and existing exports are never overwritten. A crash can leave a partial newly created derivative, which is never reused or treated as complete by a subsequent run.
-- EXIF orientation is applied to pixels before crop coordinates are calculated. New encoders do not copy EXIF/GPS, XMP or IPTC.
-- Embedded RGB ICC profiles (including camera sRGB and Adobe RGB profiles) are converted to sRGB before preview and export using moxcms with relative colourimetric intent. Colours outside sRGB may clip. RGB/RGBA 8-bit and 16-bit input is supported and alpha is preserved. Untagged input is assumed sRGB. Malformed profiles, non-RGB profiles (including CMYK and grayscale), device-link profiles and incompatible decoded channels are rejected with instructions to convert a copy in a colour-managed editor. Derivatives include an sRGB ICC profile; source ICC and EXIF/GPS are not copied. Original files remain unchanged.
-- No upscaling. A too-small crop is blocked by default. Explicitly permitting smaller derivatives exports below the requested size and marks the result. JPEG compression reduces quality from the selected ceiling until the byte cap is met; it can reach Q1. Inspect low-quality results. PNG and WebP are lossless. Impossible caps produce errors before creating output files; dimensions are never silently shrunk to satisfy a cap.
-- JPEG with transparent pixels requires a white, black or custom background selected by the user. PNG and lossless WebP preserve alpha. Graphics are resized with Lanczos3; colour-managed linear-light and premultiplied-alpha resampling are not implemented.
-- Still JPEG/PNG/WebP only. Animated PNG/WebP may decode a first frame; animation export, HEIC, RAW and AI cropping are deferred. The window explicitly discloses this.
-- No photo upload, account, telemetry, CMS integration, external fonts or application network client. Development tooling fetches dependencies and uses a loopback Vite server; packaged frontend policy allows only local IPC connections.
-- File decode/encoding occurs in blocking worker tasks; frontend batch requests are sequential, and the window displays progress by file. There is no intra-file percentage estimate or cancellation yet.
+JPG compression adjusts automatically. PNG compression is lossless; if a cap cannot be met, the app reports an error rather than downloading an oversized file. A failed batch does not produce a partial ZIP. Decimal units are used: 1 KB = 1,000 bytes; 1 MB = 1,000,000 bytes.
 
-## Validation status
+HEIC, RAW, GIF, SVG and animated files are unsupported. Convert a copy first. Malformed or unsupported colour profiles, including unsupported CMYK/YCCK inputs, are rejected with guidance. Large batches can still encounter device memory limits.
 
-See [VALIDATION.md](VALIDATION.md) for the actual checks attempted, exact helper failure and remaining acceptance steps. Tests are provided; no test pass is claimed.
+The catalogue is based on the [official uOttawa image specifications](https://virtuo.uottawa.ca/en/brand-design/digital-marketing/design/image-specifications), which may require uOttawa sign-in. App-specific sizing and caps are not claims about official requirements. See the selected preset’s help for source notes and ambiguities. Video-related presets prepare still preview images, not video files.
 
-The Library item `libfile_c946a7f57bc48191a1662c2038dda592` was resolved by filename to `image specs for uottawa.docx` (17,399,078 bytes in Library metadata). It was **not materialized** into this executor and its screenshots were **not inspected**. The presets use only the four starter specifications in the delegated instruction.
+## Processing and privacy
+
+- Images are processed on the user’s device using the shared Rust engine compiled to WebAssembly in a browser Worker. Originals remain unchanged.
+- EXIF orientation is applied, supported RGB ICC profiles are converted to sRGB, and EXIF/GPS metadata is removed from exports.
+- Images, original filenames and local paths are not sent to the server.
+- Deliberately saved preset/settings data uses authenticated account storage. Existing saved data is retained; the current simplified editing workflow uses current output rules without overwriting it.
+- The shared download counter receives only a downloaded-image count and a random per-download ID for deduplication. Counter records contain no visitor identifiers. This replaces the original desktop prototype’s blanket “no telemetry” description.
+- Filenames are normalized to lowercase letters, digits and dashes, with safe suffixes for duplicate names in a batch.
+
+## Validation and remaining acceptance
+
+The version 17 release record reports a successful production build, TypeScript checks, **38 unit tests**, and six React/WASM/CSS regression scripts. Coverage includes the exact 50 MB boundary, rejection before WASM allocation, picker/import routing, mixed presets, output dimensions/caps, no partial ZIP on failure, bilingual controls and dark borders. Hosted HTML and engine assets were checked against the tested build; authentication rejection checks passed. Earlier records cover native/WASM colour and pixel parity, ZIP integrity, Stop/retry, cropping, filenames, persistence and responsive layouts.
+
+These are recorded results, not a claim that the full suite was rerun for this documentation change. The live interface, preset list, Help and mode switching were inspected on October 19, 2026.
+
+Remaining acceptance checks: Safari, physical touch/drag, native file dialogs and browser save prompts. These are not claimed as verified. Review exported images before publishing, especially when the app warns about enlargement or strong compression.
+
+Release evidence and detailed history are on the browser branch:
+
+- [Version 17 publication and 50 MB input validation](https://github.com/chelseatech/re-img/blob/feat/re-image-browser/browser/UPLOAD_ZONE_VALIDATION.md)
+- [Browser validation records](https://github.com/chelseatech/re-img/tree/feat/re-image-browser/browser)
+- [Shared engine and initial browser validation](https://github.com/chelseatech/re-img/blob/feat/re-image-browser/RE_IMAGE_VALIDATION.md)
+
+## Development
+
+Check out the browser branch before running browser commands. Node.js **22.13.0 or newer** is required.
+
+~~~sh
+git clone https://github.com/chelseatech/re-img.git
+cd re-img
+git switch feat/re-image-browser
+cd browser
+npm run install:ci
+npm run dev
+~~~
+
+For a standalone production build, run **npm run build** from browser/. **npm start** previews the built Worker locally; it does not deploy. Account preferences and the counter use Cloudflare D1; see the [browser setup README](https://github.com/chelseatech/re-img/blob/feat/re-image-browser/browser/README.md) for local runtime, authentication and migration details. Follow the Sites publishing workflow for hosted updates. Keep validation records tied to the exact tested application commit and deployment.
+
+Repository layout on the browser branch:
+
+| Path | Purpose |
+| --- | --- |
+| browser/ | Current React/TypeScript, Vite/Vinext browser app, Worker integration, D1 routes and validation records |
+| crates/ | Shared Rust processing engine and WASM support |
+| src/, src-tauri/ | Original desktop interface and Tauri shell |
+| tests/ | Desktop JavaScript regression tests |
+
+The desktop prototype uses separate root-level npm/Tauri commands and native prerequisites. Its original [VALIDATION.md](VALIDATION.md) is historical desktop evidence, not the current browser launch status. Browser rollout does not imply a new Windows or macOS installer release.
