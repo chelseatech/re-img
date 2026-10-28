@@ -2,7 +2,7 @@
 
 Browser-based image preparation for uOttawa web content. Crop, resize and compress images to component presets, then download JPG/PNG files individually or as a ZIP. Created by Ryan O’Connor.
 
-**Status: ready for internal rollout.** The browser app is published and available at **[Open re-img](https://re-image.chelsea-tech-2945.chatgpt.site/)**. Latest recorded deployment: **version 17, October 15, 2026**. README reviewed against the live interface and release records on October 19, 2026.
+**Status: ready for internal rollout.** The browser app is now available at **[Open re-img on Cloudflare](https://re-img.ryan-e65.workers.dev/)**. The Cloudflare deployment uses the published version 27 source from October 23, 2026. The former ChatGPT Sites URL remains public while links are updated.
 
 No desktop installation is needed for the hosted app. French is the default; English and light/dark themes are available.
 
@@ -10,8 +10,8 @@ No desktop installation is needed for the hosted app. French is the default; Eng
 
 | Item | Current status |
 | --- | --- |
-| Hosted browser app | Published version 17; ready for internal rollout |
-| Browser source | [feat/re-image-browser](https://github.com/chelseatech/re-img/tree/feat/re-image-browser), in the browser/ directory |
+| Hosted browser app | Cloudflare Worker based on published version 27; ready for internal rollout |
+| Browser source | Cloudflare migration is in the local `migrate/cloudflare-hosting` branch of the separate `site/` checkout; the earlier browser source is on [feat/re-image-browser](https://github.com/chelseatech/re-img/tree/feat/re-image-browser) |
 | Default branch | Apart from this README, main still contains the original Windows/Tauri 0.1.1 prototype; the browser work has not been merged |
 | Desktop app | Separate development path; no GitHub release is published |
 | Access | Latest deployment record confirms a public audience. Internal rollout describes intended use, not enforced access restriction |
@@ -55,7 +55,7 @@ The catalogue is based on the [official uOttawa image specifications](https://vi
 - Images are processed on the user’s device using the shared Rust engine compiled to WebAssembly in a browser Worker. Originals remain unchanged.
 - EXIF orientation is applied, supported RGB ICC profiles are converted to sRGB, and EXIF/GPS metadata is removed from exports.
 - Images, original filenames and local paths are not sent to the server.
-- Deliberately saved preset/settings data uses authenticated account storage. Existing saved data is retained; the current simplified editing workflow uses current output rules without overwriting it.
+- Language and theme are stored in the current browser. The Cloudflare version has no account-based preset syncing.
 - The shared download counter receives only a downloaded-image count and a random per-download ID for deduplication. Counter records contain no visitor identifiers. This replaces the original desktop prototype’s blanket “no telemetry” description.
 - Filenames are normalized to lowercase letters, digits and dashes, with safe suffixes for duplicate names in a batch.
 
@@ -86,7 +86,7 @@ npm run install:ci
 npm run dev
 ~~~
 
-For a standalone production build, run **npm run build** from browser/. **npm start** previews the built Worker locally; it does not deploy. Account preferences and the counter use Cloudflare D1; see the [browser setup README](https://github.com/chelseatech/re-img/blob/feat/re-image-browser/browser/README.md) for local runtime, authentication and migration details. Follow the Sites publishing workflow for hosted updates. Keep validation records tied to the exact tested application commit and deployment.
+For a standalone production build, run **npm run build** from browser/. **npm start** previews the built Worker locally; it does not deploy. The download counter uses Cloudflare D1. The local `site/CLOUDFLARE_MIGRATION.md` records the current deployment and release procedure. Keep validation records tied to the exact tested application commit and deployment.
 
 Repository layout on the browser branch:
 
