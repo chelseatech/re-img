@@ -18,9 +18,9 @@ You can also write descriptions manually. Copy buttons sit below each language f
 
 Batch controls are temporarily hidden. Their implementation is retained behind `features.batch` in `browser/lib/features.ts`.
 
-New image clears the session and returns to the empty uploader without reloading. Language and theme are kept.
+New image clears the session and returns to the empty uploader without reloading. Language, theme and export history are kept.
 
-Images and drafts stay in the current tab. Download images and copy descriptions before closing or refreshing. AI can miss or invent details; review both languages for the image's purpose and correct terminology before publishing. A downloaded image does not automatically fill its website alt attribute.
+The last 10 exported images are kept in local browser storage as small thumbnails, filenames and editable English/French alt text. The list sits below the editor, survives reloads and New image, and has separate copy buttons and Clear history. No history is sent to a server. Unexported images and drafts remain session data. AI can miss or invent details; review both languages for the image's purpose and correct terminology before publishing. A downloaded image does not automatically fill its website alt attribute.
 
 ## Cloudflare AI: speed and cost
 

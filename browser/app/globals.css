@@ -127,3 +127,16 @@ body{padding-bottom:0}
 .header-inner>.brand{min-width:0;flex-wrap:wrap;gap:2px 12px}
 .brand .header-version{font-size:10px;font-weight:400;letter-spacing:0;line-height:1.4;white-space:nowrap;color:inherit;margin-left:4px}
 html[data-theme=dark] .brand .header-version{color:inherit}
+
+/* Local export history follows the whole editor and spans its full width. */
+.export-history{grid-column:1/-1;width:100%;min-width:0;padding:16px;margin-top:4px}
+.export-history h2{font-size:18px}.export-history .section-heading{gap:8px;flex-wrap:wrap}
+.history-privacy,.history-empty{font-size:12px;line-height:1.5;color:#687787;margin-top:6px}
+.history-list{list-style:none;margin:12px 0 0;padding:0}
+.history-entry{display:grid;grid-template-columns:160px minmax(0,1fr);gap:16px;border-top:1px solid #d5dee6;padding:16px 0}
+.history-image{min-width:0}.history-image img{display:block;width:160px;height:100px;object-fit:contain;border-radius:4px;background:#edf2f6}
+.history-image strong{display:block;font-size:12px;font-weight:600;overflow-wrap:anywhere;margin-top:6px}
+.history-feedback{font-size:12px;line-height:1.5}.history-feedback:empty{display:none}
+html[data-theme=dark] .history-privacy,html[data-theme=dark] .history-empty{color:#9aa6b3}
+html[data-theme=dark] .history-entry{border-color:#567086}
+@media(max-width:720px){.export-history{padding:10px}.history-entry{grid-template-columns:1fr;gap:10px}.history-image{display:flex;align-items:center;gap:10px}.history-image img{width:96px;height:64px;flex:none}.history-image strong{margin:0}.history-entry .alt-fields{gap:8px}}

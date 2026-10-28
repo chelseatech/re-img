@@ -12,7 +12,7 @@
     "start": "node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js dev --config dist/server/wrangler.json --local --persist-to .wrangler/state --ip 127.0.0.1 --inspector-port 0",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "db:generate": "drizzle-kit generate",
-    "test": "node --test tests/alt-cloud.mjs tests/alt-image.mjs tests/alt-image-wasm.mjs tests/alt-text.mjs tests/logic.mjs tests/batch.mjs tests/input-policy.mjs tests/filenames.mjs tests/crop-interaction.mjs tests/catalogue.mjs tests/flexible-size.mjs tests/download-count.mjs tests/i18n.mjs tests/export-policy.mjs tests/preset-search.mjs tests/time-saved.mjs",
+    "test": "node --test tests/export-history.mjs tests/alt-cloud.mjs tests/alt-image.mjs tests/alt-image-wasm.mjs tests/alt-text.mjs tests/logic.mjs tests/batch.mjs tests/input-policy.mjs tests/filenames.mjs tests/crop-interaction.mjs tests/catalogue.mjs tests/flexible-size.mjs tests/download-count.mjs tests/i18n.mjs tests/export-policy.mjs tests/preset-search.mjs tests/time-saved.mjs",
     "db:local": "wrangler d1 execute re-img --local --config dist/server/wrangler.json --persist-to .wrangler/state --file cloudflare/schema.sql",
     "db:remote": "wrangler d1 execute re-img --remote --config dist/server/wrangler.json --file cloudflare/schema.sql",
     "deploy": "npm run build && npm run db:remote && wrangler deploy --config dist/server/wrangler.json"

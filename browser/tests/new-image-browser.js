@@ -29,7 +29,7 @@ async page => {
  assert(await page.locator('main').getAttribute('class').then(c=>c.includes('single-mode')),'Reset returns to single mode');
  await page.locator('input[type=file]').first().setInputFiles(file('fresh.png'));
  await page.locator('.alt-panel').waitFor();
- assert(await page.locator('textarea').evaluateAll(fields=>fields.every(x=>!x.value)),'The next image must have empty drafts');
+ assert(await page.locator('.alt-panel textarea').evaluateAll(fields=>fields.every(x=>!x.value)),'The next image must have empty drafts');
  assert(await page.locator('.preset-table-row[aria-pressed=true]').count()===0,'The next image must start without a preset');
  assert(await page.locator('.toolbar-actions button').count()===1,'Only New image remains in the image toolbar');
  assert(!/Copy both|Copier les deux/.test(await page.locator('.alt-panel').innerText()),'Copy both must be removed');

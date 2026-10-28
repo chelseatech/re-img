@@ -13,7 +13,9 @@ import PresetPicker from './preset-picker';
 import release from '../lib/release.json';
 import {features} from '../lib/features';
 import AltTextPanel,{type AltDraft} from './alt-text-panel';
-import {altSourceKey} from '../lib/alt-text.mjs';
+import {altSourceKey,editAltDraft} from '../lib/alt-text.mjs';
+import ExportHistory,{type HistoryEntry} from './export-history';
+import {readHistory,writeHistory,clearHistory,addHistory,editHistoryDraft,historyThumbnail} from '../lib/export-history.mjs';
 import {createAltImage,altAnalysisSettings} from '../lib/alt-image.mjs';
 import {formatTimeSaved} from '../lib/time-saved.mjs';
 import {flexiblePolicy,flexibleDefault,flexibleMaximum} from '../lib/flexible-size.mjs';
@@ -27,6 +29,33 @@ type Item={id:string,file:File,stem:string,suffix:boolean,preset:Preset|null,rat
 const emptyPreset={...starters[0],width:null,height:null};
 function Arrow(){return <svg aria-hidden="true" className="download-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3v12m-5-5 5 5 5-5M4 17v4h16v-4"/></svg>;}
 export default function Prep(){
+ const [history,setHistory]=useState<HistoryEntry[]>([]),[historyFailed,setHistoryFailed]=useState(false);
+ const historyRef=useRef<HistoryEntry[]>([]),historyEpoch=useRef(0);
+ useEffect(()=>{try{const saved=readHistory(localStorage);historyRef.current=saved.entries;setHistory(saved.entries);setHistoryFailed(saved.failed);}catch{setHistoryFailed(true);}},[]);
+ function saveHistory(next:HistoryEntry[]){historyRef.current=next;setHistory(next);try{setHistoryFailed(!writeHistory(localStorage,next));}catch{setHistoryFailed(true);}}
+ function removeHistory(){historyEpoch.current++;historyRef.current=[];setHistory([]);try{setHistoryFailed(!clearHistory(localStorage));}catch{setHistoryFailed(true);}}
+ function updateAlt(id:string,alt:AltDraft){
+  update(id,{alt});const image=itemRef.current.find(item=>item.id===id);if(!image)return;
+  const next=editHistoryDraft(historyRef.current,altSourceKey(image),alt);if(next!==historyRef.current)saveHistory(next);
+ }
+ function editHistory(id:string,language:'en'|'fr',text:string){
+  const entry=historyRef.current.find(row=>row.id===id);if(!entry)return;
+  const image=itemRef.current.find(item=>altSourceKey(item)===entry.sourceKey);
+  if(image){updateAlt(image.id,editAltDraft(image.alt??{},{[language]:text},entry.sourceKey));return;}
+  saveHistory(historyRef.current.map(row=>row.id===id?{...row,[language]:text}:row));
+ }
+ async function rememberExport(image:Item,out:Output){
+  const epoch=historyEpoch.current,sourceKey=altSourceKey(image),id=JSON.stringify([sourceKey,out.name]);
+  const latest=itemRef.current.find(item=>altSourceKey(item)===sourceKey),draft=latest?.alt??image.alt??{};
+  // Persist text immediately; decoding a thumbnail must not delay reload safety.
+  const thumbnail=historyRef.current.find(row=>row.id===id)?.thumbnail??'';
+  saveHistory(addHistory(historyRef.current,{id,sourceKey,filename:out.name,thumbnail,en:draft.en??'',fr:draft.fr??''}));
+  try{
+   const prepared=await historyThumbnail(out.bytes,`image/${out.format}`);
+   if(epoch!==historyEpoch.current||!historyRef.current.some(row=>row.id===id))return;
+   saveHistory(historyRef.current.map(row=>row.id===id?{...row,thumbnail:prepared}:row));
+  }catch{/* Keep descriptions even if a thumbnail cannot be made. */}
+ }
  const [dark,setDark]=useState(false);
  const [downloadTotal,setDownloadTotal]=useState<number|null>(null);
  const receiveTotal=(value:number)=>setDownloadTotal(previous=>Math.max(previous??0,value));
@@ -97,10 +126,10 @@ export default function Prep(){
  function retainedOutputs(){return new Map(itemRef.current.filter(i=>i.out).map(i=>[i.id,i.out!]));}
  // Settings and crop edits invalidate derivatives. Ready files download in the click gesture.
  async function download(id:string){
-  if(busyRef.current)return;const i=itemRef.current.find(v=>v.id===id);if(!i)return;try{assertInputSize(i.file.size);}catch(e){update(id,{status:'error',error:(e as Error).message});return;}if(i.out){assertOutput(i.out.bytes,i.out,i.out.width,i.out.height);triggerDownload(i.out);return;}let preset:Preset;
+  if(busyRef.current)return;const i=itemRef.current.find(v=>v.id===id);if(!i)return;try{assertInputSize(i.file.size);}catch(e){update(id,{status:'error',error:(e as Error).message});return;}if(i.out){assertOutput(i.out.bytes,i.out,i.out.width,i.out.height);triggerDownload(i.out);void rememberExport(i,i.out);return;}let preset:Preset;
   try{preset=exportPreset(i.preset);}catch(e){setNotice((e as Error).message);return;}
   invalidateArchive();setWorking(true);cancel.current=false;setNotice('');setProgress({kind:'processing',index:1,total:1});
-  try{const retained=retainedOutputs(),used=new Set(Array.from(retained.values()).map(out=>out.name.toLocaleLowerCase()));triggerDownload(await createOutput(i,preset,itemRef.current.findIndex(v=>v.id===id),used,retained));}
+  try{const retained=retainedOutputs(),used=new Set(Array.from(retained.values()).map(out=>out.name.toLocaleLowerCase()));const out=await createOutput(i,preset,itemRef.current.findIndex(v=>v.id===id),used,retained);triggerDownload(out);void rememberExport(i,out);}
   catch(e){update(id,{status:cancel.current?'interrupted':'error',error:(e as Error).message});}finally{setWorking(false);}
  }
  async function downloadAll(){
@@ -172,8 +201,10 @@ export default function Prep(){
  {current&&(specification?.selectableRatios||specification?.displayGuides)&&<p className="guide-caption">{specification?.displayGuides?t.displayGuides:t.ratioGuides}</p>}
 
  {current?.preview&&selected==='uo-20'&&<p className="hero-preview-caption"><strong>{t.heroPreviewTitle}</strong> {t.heroPreviewHelp}</p>}
- {current?.preview&&<AltTextPanel lang={lang} itemId={current.id} sourceKey={altSourceKey(current)} draft={current.alt??{}} disabled={settingsBusy} canGenerate={configured} onChange={alt=>update(current.id,{alt})} prepareImage={prepareAltImage}/>}
- </section></section></main>
+ {current?.preview&&<AltTextPanel lang={lang} itemId={current.id} sourceKey={altSourceKey(current)} draft={current.alt??{}} disabled={settingsBusy} canGenerate={configured} onChange={alt=>updateAlt(current.id,alt)} prepareImage={prepareAltImage}/>}
+ </section></section>
+ <ExportHistory lang={lang} entries={history} storageFailed={historyFailed} onClear={removeHistory} onEdit={editHistory}/>
+ </main>
  {notice&&<div className="notice" role="alert">{errorText(notice,lang)}<button aria-label={t.dismiss} onClick={()=>setNotice('')}>×</button></div>}
  {help&&<Help lang={lang} specification={specification} onClose={()=>setHelp(false)}/>}
 

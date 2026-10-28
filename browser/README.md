@@ -17,9 +17,9 @@ This directory is the production browser source, published as `browser/` in [che
 - Generate EN/FR alt-text drafts with Generate alt text on the right below the image; edit the compact fields and copy each language using its button below.
 - Open the small ⓘ buttons for privacy and crop/resolution notices. Review descriptions again after changing the crop.
 
-New image clears all images, drafts, filenames and settings without reloading. Language and theme are kept.
+New image clears all images, drafts, filenames and settings without reloading. Language, theme and export history are kept.
 
-Image files and alt-text drafts are session data. Download images and copy descriptions before closing or refreshing.
+Export history below the editor keeps the last 10 exports: a small thumbnail, final filename and editable EN/FR descriptions. It survives reloads and New image; separate copy buttons and Clear history are provided. History stays only in this browser. Unexported images and drafts remain session data. Storage failures are shown without blocking downloads.
 
 ## Cloud AI, speed and cost
 
