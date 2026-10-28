@@ -125,5 +125,5 @@ body{padding-bottom:0}
 .app-shell>header{flex:none}
 .app-shell>.app-layout{flex:1;min-height:0;overflow:auto;width:100%;align-content:start}
 .header-inner>.brand{min-width:0;flex-wrap:wrap;gap:2px 12px}
-.brand .header-version{font-size:10px;font-weight:400;letter-spacing:0;line-height:1.4;white-space:nowrap;color:rgb(0 0 0 / 10%);margin-left:4px}
-html[data-theme=dark] .brand .header-version{color:rgb(255 255 255 / 10%)}
+.brand .header-version{font-size:10px;font-weight:400;letter-spacing:0;line-height:1.4;white-space:nowrap;color:inherit;margin-left:4px}
+html[data-theme=dark] .brand .header-version{color:inherit}

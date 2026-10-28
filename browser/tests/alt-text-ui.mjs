@@ -21,7 +21,9 @@ async function fill(index,text){await flush(()=>{const el=document.querySelector
 try{
  await flush(render);assert.equal(requests.length,0,'no cloud upload before Generate');
  await fill(0,'A library.');await fill(1,'Une bibliothèque.');
- await click('Copy both');assert.equal(copied.at(-1),'EN: A library.\n\nFR: Une bibliothèque.');
+ await click('Copy');assert.equal(copied.at(-1),'A library.');
+ await flush(()=>document.querySelectorAll('.alt-field button')[1].click());assert.equal(copied.at(-1),'Une bibliothèque.');
+ assert.ok(![...document.querySelectorAll('button')].some(b=>b.textContent==='Copy both'));
  assert.equal(document.querySelectorAll('textarea').length,2);
  assert.equal(document.querySelector('.alt-toolbar button').textContent,'Generate alt text');
  assert.equal(document.querySelector('.alt-info').open,false,'notices collapsed by default');

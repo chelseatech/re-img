@@ -11,10 +11,14 @@ Prepare images for uOttawa websites: crop, resize and compress to the correct co
 1. Choose a website component from the searchable preset list.
 2. Add a still JPEG, PNG or WebP image using the picker, drag/drop or clipboard.
 3. Position the crop. Arrow keys move it; +/− resize it. Circular guides show the website's visible area; exported files remain square.
-4. Choose JPG or PNG, check the filename and download. Batch mode supports individual exports or a ZIP.
+4. Choose JPG or PNG, check the filename and download.
 5. Choose **Generate alt text**, review/edit both alt-text drafts and copy them into the CMS. Each language has its own copy button.
 
-You can also write descriptions manually. Copy buttons sit below each language field; Copy both copies both descriptions. The small ⓘ buttons show privacy and crop/resolution notices. Review descriptions again after changing the crop.
+You can also write descriptions manually. Copy buttons sit below each language field; The small ⓘ buttons show privacy and crop/resolution notices. Review descriptions again after changing the crop.
+
+Batch controls are temporarily hidden. Their implementation is retained behind `features.batch` in `browser/lib/features.ts`.
+
+New image clears the session and returns to the empty uploader without reloading. Language and theme are kept.
 
 Images and drafts stay in the current tab. Download images and copy descriptions before closing or refreshing. AI can miss or invent details; review both languages for the image's purpose and correct terminology before publishing. A downloaded image does not automatically fill its website alt attribute.
 
@@ -41,7 +45,7 @@ See [Cloudflare's Workers AI data policy](https://developers.cloudflare.com/work
 | Rule | Current behaviour |
 | --- | --- |
 | Input | Still JPEG, PNG and WebP; maximum 50,000,000 bytes per file |
-| Output | JPG or PNG; up to 50 images per batch |
+| Output | JPG or PNG; one image at a time |
 | Dimensions | Exact prescribed pixels, with an enlargement warning when necessary |
 | Body text with image | 600 × 337, 600 × 400 or 600 × 750 px |
 | Quick links with tabs/images | 380 × 474 px |

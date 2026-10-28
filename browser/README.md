@@ -13,9 +13,11 @@ This directory is the production browser source, published as `browser/` in [che
 - Choose among 42 component presets, with searchable English/French names and dimensions.
 - Import still JPEG, PNG or WebP images by picker, drop or clipboard.
 - Move and resize crops with a mouse, touch or keyboard; see circular display guides where relevant.
-- Export JPG or PNG at the prescribed dimensions, individually or in a batch ZIP.
-- Generate EN/FR alt-text drafts with Generate alt text on the right below the image; edit the compact fields and copy either language or both using the buttons below.
+- Export JPG or PNG at the prescribed dimensions, one image at a time.
+- Generate EN/FR alt-text drafts with Generate alt text on the right below the image; edit the compact fields and copy each language using its button below.
 - Open the small ⓘ buttons for privacy and crop/resolution notices. Review descriptions again after changing the crop.
+
+New image clears all images, drafts, filenames and settings without reloading. Language and theme are kept.
 
 Image files and alt-text drafts are session data. Download images and copy descriptions before closing or refreshing.
 
@@ -42,7 +44,7 @@ AI drafts can omit or invent details. Review both languages for the image's actu
 ## Image rules
 
 - Still JPEG, PNG and WebP input; JPG/PNG output. HEIC, RAW, GIF, SVG and animation are unsupported.
-- Up to 50 images; maximum input file 50,000,000 bytes.
+- One image at a time; maximum input file 50,000,000 bytes.
 - Exact fixed output dimensions, with an enlargement warning when needed.
 - Body images: 600 × 337, 600 × 400 or 600 × 750 px. Quick links with tabs/images: 380 × 474 px. Homepage hero: 1000 × 667 px.
 - Global output ceiling: 1,200,000 bytes; stricter per-preset caps also apply, including 1,000,000 bytes for Homepage hero. PNG that cannot meet its cap fails rather than downloading an oversized file.
@@ -51,6 +53,8 @@ AI drafts can omit or invent details. Review both languages for the image's actu
 The catalogue retains source notes and app-specific overrides. The [official Virtuo specifications](https://virtuo.uottawa.ca/en/brand-design/digital-marketing/design/image-specifications) may require uOttawa sign-in.
 
 ## Development
+
+Batch mode is temporarily hidden. Set `features.batch` to `true` in `lib/features.ts` to restore the mode switch, queue, ZIP controls and corresponding Help. The batch engine and tests are retained.
 
 Use Node.js 22.13+ (verified on Node 24). Run these commands inside `browser/`:
 
