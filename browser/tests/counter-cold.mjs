@@ -1,0 +1,8 @@
+// Fresh, isolated LOCAL D1 preview; no histories are removed from the main fixture.
+import assert from 'node:assert/strict';import {randomUUID} from 'node:crypto';
+const origin=process.argv[2]??'http://127.0.0.1:5182';const parsed=new URL(origin);assert.ok(parsed.protocol==='http:'&&parsed.hostname==='127.0.0.1','Loopback only');
+async function request(body){for(let n=0;n<4;n++){const r=await fetch(origin+'/api/downloads',{redirect:'error',signal:AbortSignal.timeout(10000),...(body?{method:'POST',headers:{Origin:origin,'Content-Type':'application/json'},body:JSON.stringify(body)}:{})});if(r.status===503&&(await r.clone().text()).includes('worker restarted mid-request')){await new Promise(resolve=>setTimeout(resolve,250));continue;}return {status:r.status,data:await r.json()};}throw Error('Local preview restarting');}
+assert.deepEqual(await request(),{status:200,data:{total:0}});
+const duplicate=randomUUID(),bodies=[...Array.from({length:30},(_,n)=>({requestId:randomUUID(),count:n%3+1})),...Array.from({length:20},()=>({requestId:duplicate,count:5}))];
+const responses=await Promise.all(bodies.map(request));assert.ok(responses.every(r=>r.status===200),'first-use reports must not see a false inconsistent snapshot');assert.deepEqual(await request(),{status:200,data:{total:65}});assert.equal((await request({requestId:duplicate.toUpperCase(),count:5})).status,200);assert.deepEqual(await request(),{status:200,data:{total:65}});
+console.log('PASS fresh LOCAL D1: verified initial0,30 unique first-use concurrent reports,20 concurrent duplicate reports, exact total65, case-insensitive retry. No production events or main fixture reset.');

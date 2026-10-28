@@ -1,0 +1,1 @@
+CREATE INDEX `download_dispatches_created_at_idx` ON `download_dispatches` (`created_at`);

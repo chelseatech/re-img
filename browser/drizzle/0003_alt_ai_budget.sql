@@ -1,0 +1,8 @@
+CREATE TABLE IF NOT EXISTS ai_daily_usage (
+  day TEXT PRIMARY KEY,
+  requests INTEGER NOT NULL DEFAULT 0,
+  last_minute INTEGER NOT NULL,
+  minute_requests INTEGER NOT NULL DEFAULT 0,
+  input_tokens INTEGER NOT NULL DEFAULT 0,
+  output_tokens INTEGER NOT NULL DEFAULT 0
+);
