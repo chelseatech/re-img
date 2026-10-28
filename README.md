@@ -12,11 +12,11 @@ Prepare images for uOttawa websites: crop, resize and compress to the correct co
 2. Add a still JPEG, PNG or WebP image using the picker, drag/drop or clipboard.
 3. Position the crop. Arrow keys move it; +/− resize it. Circular guides show the website's visible area; exported files remain square.
 4. Choose JPG or PNG, check the filename and download. Batch mode supports individual exports or a ZIP.
-5. Choose **Generate EN + FR**, review/edit both alt-text drafts and copy them into the CMS. Each language has its own copy button.
+5. Choose **Generate alt text**, review/edit both alt-text drafts and copy them into the CMS. Each language has its own copy button.
 
-You can also write descriptions manually, mark an image decorative, confirm review and download a filename-matched CSV. Crop changes flag descriptions for review. CSV export requires a configured preset for every queued image.
+You can also write descriptions manually. Copy buttons sit below each language field; Copy both copies both descriptions. The small ⓘ buttons show privacy and crop/resolution notices. Review descriptions again after changing the crop.
 
-Images and drafts stay in the current tab. Download/copy/export before closing or refreshing. AI can miss or invent details; review both languages for the image's purpose and correct terminology before publishing. A downloaded image does not automatically fill its website alt attribute.
+Images and drafts stay in the current tab. Download images and copy descriptions before closing or refreshing. AI can miss or invent details; review both languages for the image's purpose and correct terminology before publishing. A downloaded image does not automatically fill its website alt attribute.
 
 ## Cloudflare AI: speed and cost
 

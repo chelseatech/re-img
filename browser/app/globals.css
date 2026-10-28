@@ -67,25 +67,32 @@ html[data-theme=dark] .help-content > details {
 /* Keep footer text and its explanation clear of host UI in the lower corners. */
 .release-status{left:24px;right:80px;bottom:max(24px,env(safe-area-inset-bottom));gap:16px}.download-analytics{min-width:0;padding:4px 8px}.savings-explanation{right:8px;width:min(360px,calc(100vw - 112px));overscroll-behavior:contain}body{padding-bottom:120px}@media(max-width:720px){.release-status{left:16px;right:72px;bottom:max(20px,env(safe-area-inset-bottom));gap:6px}.download-analytics{position:static}.savings-explanation{width:min(360px,calc(100vw - 120px))}body{padding-bottom:172px}}
 
-/* Bilingual alt text stays beside the crop, with explicit local generation. */
-.alt-panel{margin-top:22px;padding-top:22px;border-top:1px solid #aebcc8;min-width:0}
-.alt-heading,.alt-field-heading,.alt-actions,.alt-footer,.alt-progress{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-.alt-heading h2{font-size:20px;margin:0 0 4px}.alt-heading p,.alt-hint{font-size:14px;line-height:1.5;color:#475569}
-.alt-status{font-size:12px;font-weight:600;padding:6px 10px;border-radius:20px;background:#eef2f6;color:#475569;max-width:100%}
-.alt-status.is-reviewed{background:#e4f3ea;color:#17643c}.alt-hint{margin:12px 0}.alt-decorative{margin:10px 0 14px}
-.alt-fields{display:grid;grid-template-columns:1fr 1fr;gap:16px}.alt-field{min-width:0}.alt-field-heading label{font-size:14px;font-weight:650}
-.alt-field textarea{display:block;width:100%;box-sizing:border-box;min-height:112px;padding:12px;border:1px solid #91a2b3;border-radius:6px;background:#fff;color:#102033;font:inherit;font-size:15px;line-height:1.5;resize:vertical}
-.alt-field textarea:focus-visible{outline:3px solid #16796b;outline-offset:2px}.alt-actions{justify-content:flex-start;margin:12px 0}.alt-actions button{min-height:44px}
+/* Compact bilingual alt text directly below the crop. */
+.alt-panel{margin-top:6px;min-width:0}
+.alt-toolbar{position:relative;display:flex;align-items:center;justify-content:flex-end;gap:6px;margin-bottom:8px}
+.alt-toolbar>.secondary{min-height:36px;font-size:14px;padding:6px 12px}
+.alt-info{line-height:1}
+.alt-info summary{list-style:none;cursor:pointer;font-size:18px;color:#737d89;padding:3px}
+.alt-info summary::-webkit-details-marker{display:none}
+.alt-info summary.has-warning{color:#a56b0a}
+.alt-info-content{position:absolute;right:0;top:calc(100% + 6px);z-index:4;width:min(300px,calc(100vw - 64px));max-height:50vh;overflow:auto;padding:12px;border:1px solid #aebcc8;border-radius:6px;background:#fff;box-shadow:0 3px 12px #10203326;font-size:12px;line-height:1.5}
+.alt-info-content p+p{margin-top:8px}
+html[data-theme=dark] .alt-info-content{background:#182635;border-color:#687e94}
+html[data-theme=dark] .alt-info summary{color:#9aa6b3}
+.image-drop-target.is-loaded canvas{width:min(100%,max(280px,calc((100dvh - 460px) * 1000 / 610)));margin-inline:auto}
+.alt-actions,.alt-progress{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:8px 0}
+.alt-actions button,.alt-panel .text-button{min-height:44px;white-space:normal}
+.alt-privacy{font-size:12px;line-height:1.5;color:#737d89;margin:0}
+.alt-fields{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.alt-field{min-width:0}.alt-field>label{display:block;font-size:14px;font-weight:650;margin-bottom:6px}
+.alt-field textarea{display:block;width:100%;box-sizing:border-box;height:56px;min-height:56px;padding:6px 12px;border:1px solid #91a2b3;border-radius:6px;background:#fff;color:#102033;font:inherit;font-size:15px;line-height:1.5;resize:vertical}
+.alt-field textarea:focus-visible{outline:3px solid #16796b;outline-offset:2px}
 .alt-notice{padding:12px;border-left:3px solid #b37b16;background:#fff7e6;color:#62430d;font-size:14px;line-height:1.5;margin:12px 0}
-.alt-privacy{font-size:13px;line-height:1.55;margin:12px 0}.alt-privacy summary{cursor:pointer;min-height:30px;padding:4px 0}.alt-privacy p+p{margin-top:8px}
-.alt-download-note,.alt-session{font-size:12px;line-height:1.5;color:#526479}.alt-footer{margin-top:16px;padding-top:12px;border-top:1px solid #d5dee6}.alt-footer .check{font-size:13px;flex:1;min-width:180px}
-.alt-feedback{font-size:13px;line-height:1.5;min-height:20px;margin-top:8px}.alt-progress{font-size:14px;margin:8px 0}.alt-panel .text-button{min-height:44px;white-space:normal}
-html[data-theme=dark] .alt-panel,html[data-theme=dark] .alt-footer{border-color:#687e94}
+.alt-hint,.alt-feedback,.alt-progress{font-size:13px;line-height:1.5}
 html[data-theme=dark] .alt-field textarea{background:#101c29;color:#edf5ff;border-color:#7c91a6}
-html[data-theme=dark] .alt-heading p,html[data-theme=dark] .alt-hint,html[data-theme=dark] .alt-download-note,html[data-theme=dark] .alt-session{color:#bccddd}
-html[data-theme=dark] .alt-status{background:#26394d;color:#dae6f2}html[data-theme=dark] .alt-status.is-reviewed{background:#173e32;color:#a2ecc7}
+html[data-theme=dark] .alt-privacy{color:#9aa6b3}
 html[data-theme=dark] .alt-notice{background:#382c17;color:#f9dfaa}
-@media(max-width:900px){.alt-fields{grid-template-columns:1fr}.alt-heading{align-items:flex-start}.alt-footer{align-items:flex-start}}
+@media(max-width:900px){.alt-fields{grid-template-columns:1fr}}
 
 /* C1: one always-visible preset list; format remains a shared download control. */
 .format-control{flex-wrap:wrap}.format-control .save-format-help{flex:0 0 100%}
@@ -103,3 +110,20 @@ header .header-inner{display:grid;grid-template-columns:minmax(180px,1fr) minmax
 
 /* Five fixed 52px rows (including separators); all remaining presets scroll. */
 .preset-table-list>li{height:52px;box-sizing:border-box}.preset-table-list .preset-table-row{height:100%;max-height:52px;padding:4px 9px}.preset-table-name{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;line-height:1.3}.preset-table-size{line-height:1.15}.preset-count-status{position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}.help-content .help-preset-shortcuts{font-size:13px;line-height:1.4;margin:0 0 10px}
+
+/* Resolution warnings open over the controls without adding a text block. */
+.single-export,.file{position:relative}
+.image-warning-info{position:absolute;right:0;bottom:58px;z-index:2;line-height:1}
+.file .image-warning-info{right:8px;bottom:58px}
+.image-warning-info summary{list-style:none;cursor:pointer;font-size:18px;color:#a56b0a;padding:3px}
+.image-warning-info summary::-webkit-details-marker{display:none}
+.image-warning-info .image-size-warning{position:absolute;bottom:100%;right:0;width:min(280px,calc(100vw - 72px));max-height:50vh;overflow:auto;box-shadow:0 3px 12px #10203326;font-size:13px;line-height:1.5;font-weight:500;padding:10px;margin-bottom:6px}
+
+/* Header and workspace occupy separate rows; version stays beside the logo. */
+body{padding-bottom:0}
+.app-shell{height:100dvh;display:flex;flex-direction:column;overflow:hidden}
+.app-shell>header{flex:none}
+.app-shell>.app-layout{flex:1;min-height:0;overflow:auto;width:100%;align-content:start}
+.header-inner>.brand{min-width:0;flex-wrap:wrap;gap:2px 12px}
+.brand .header-version{font-size:10px;font-weight:400;letter-spacing:0;line-height:1.4;white-space:nowrap;color:rgb(0 0 0 / 10%);margin-left:4px}
+html[data-theme=dark] .brand .header-version{color:rgb(255 255 255 / 10%)}

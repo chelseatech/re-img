@@ -14,10 +14,10 @@ This directory is the production browser source, published as `browser/` in [che
 - Import still JPEG, PNG or WebP images by picker, drop or clipboard.
 - Move and resize crops with a mouse, touch or keyboard; see circular display guides where relevant.
 - Export JPG or PNG at the prescribed dimensions, individually or in a batch ZIP.
-- Generate EN/FR alt-text drafts, edit them and copy each language independently or together.
-- Mark decorative images, confirm human review and export a filename-matched UTF-8 CSV. Crop changes flag descriptions for review.
+- Generate EN/FR alt-text drafts with Generate alt text on the right below the image; edit the compact fields and copy either language or both using the buttons below.
+- Open the small ⓘ buttons for privacy and crop/resolution notices. Review descriptions again after changing the crop.
 
-Image files and alt-text drafts are session data. Download/copy/export before closing or refreshing. CSV export requires a configured preset for every queued image.
+Image files and alt-text drafts are session data. Download images and copy descriptions before closing or refreshing.
 
 ## Cloud AI, speed and cost
 
