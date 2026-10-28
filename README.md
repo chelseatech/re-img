@@ -59,12 +59,13 @@ Node.js 22.13+ is required (verified on Node 24). The browser build includes the
 git clone https://github.com/chelseatech/re-img.git
 cd re-img/browser
 npm run install:ci
+npx wrangler login
 npm run build
 npm run db:local
 npm run dev
 ```
 
-Local AI testing calls Cloudflare and consumes account quota; Wrangler authentication is required for generation. Local crop/export and manual text entry work independently.
+The configured local AI binding requires Wrangler authentication. AI testing calls Cloudflare and consumes account quota. Crop/export and manual text entry do not make AI calls.
 
 ```sh
 npm test

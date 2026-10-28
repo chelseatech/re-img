@@ -20,7 +20,7 @@ The existing Cloudflare migration branch was merged with the exact version 29 so
 - `alt-text-ui.mjs`: actual React editing/copy, explicit cloud upload, replacement confirmation, abort/late-result isolation, decorative guidance, CSV action and EN/FR controls passed.
 - `preset-breakpoints-ui.mjs`: all 43 target variants in JPEG/PNG, mixed ZIPs, filenames, pixel caps and no account-preference calls passed. The removed Sites account-sync expectation was replaced with an assertion that no preference endpoint is called.
 - Filename/import regressions, TypeScript and production build passed. Build still reports Vinext's existing unknown-route-classification warning for the main page.
-- The additive D1 schema was applied without resetting the existing download ledger. Native hosted verification follows deployment.
+- The additive D1 schema was applied without resetting the existing download ledger (82 after deployment). Native hosted generation on the Cloudflare URL passed the couple-scene regression in both languages in 2.21 seconds, with no browser model downloads, panel errors or horizontal overflow.
 
 Historical limitations and old-script failures documented for earlier releases are not a claim that every legacy script was rerun for this migration. Safari and physical mobile hardware remain unverified. All AI descriptions still need editorial review.
 

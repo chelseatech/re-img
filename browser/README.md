@@ -56,12 +56,13 @@ Use Node.js 22.13+ (verified on Node 24). Run these commands inside `browser/`:
 
 ```sh
 npm run install:ci
+npx wrangler login
 npm run build
 npm run db:local
 npm run dev
 ```
 
-Local AI calls use the real Cloudflare AI binding and consume account quota; Wrangler authentication is required for those calls. Ordinary crop/export and manual alt text work without an AI response.
+The configured local AI binding requires Wrangler authentication. AI calls use real Cloudflare inference and consume account quota. Ordinary crop/export and manual alt text do not make AI calls.
 
 ```sh
 npm test
