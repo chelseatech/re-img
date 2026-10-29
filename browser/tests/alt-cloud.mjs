@@ -1,10 +1,10 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {DatabaseSync} from 'node:sqlite';
-import {handleAltText} from '../lib/alt-cloud.mjs';
+import {handleAltText,readAltGenerationTotal} from '../lib/alt-cloud.mjs';
 const png=Uint8Array.from(Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACklEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg==','base64'));
 function setup(){
- const sqlite=new DatabaseSync(':memory:');sqlite.exec('CREATE TABLE ai_daily_usage(day TEXT PRIMARY KEY,requests INTEGER NOT NULL,last_minute INTEGER NOT NULL,minute_requests INTEGER NOT NULL,input_tokens INTEGER NOT NULL DEFAULT 0,output_tokens INTEGER NOT NULL DEFAULT 0)');
+ const sqlite=new DatabaseSync(':memory:');sqlite.exec('CREATE TABLE ai_generation_totals(id INTEGER PRIMARY KEY,total INTEGER NOT NULL DEFAULT 0); CREATE TABLE ai_daily_usage(day TEXT PRIMARY KEY,requests INTEGER NOT NULL,last_minute INTEGER NOT NULL,minute_requests INTEGER NOT NULL,input_tokens INTEGER NOT NULL DEFAULT 0,output_tokens INTEGER NOT NULL DEFAULT 0)');
  const DB={prepare(sql){let values=[];return {bind(...v){values=v;return this;},async first(){return sqlite.prepare(sql).get(...values)??null;},async run(){return sqlite.prepare(sql).run(...values);}};}};
  const calls=[],AI={async run(model,input){calls.push({model,input});return {response:'{"en":"Two people embracing beside a pond.","fr":"Deux personnes s’enlacent au bord d’un étang."}',usage:{prompt_tokens:1200,completion_tokens:80}};}};
  return {DB,AI,sqlite,calls};
@@ -46,4 +46,19 @@ test('burst limit resets after one minute and daily usage resets at UTC midnight
  time+=60000;assert.equal((await handleAltText(request(),env,options)).status,200);
  const rows=env.sqlite.prepare('SELECT day,requests FROM ai_daily_usage ORDER BY day').all();
  assert.deepEqual(rows.map(row=>[row.day,row.requests]),[['2026-10-27',2],['2026-10-28',1]]);
+});
+
+test('alt savings count only validated successful generation uses, and persist separately from quota',async()=>{
+ const env=setup();
+ assert.deepEqual(await (await readAltGenerationTotal(env)).json(),{total:0});
+ await handleAltText(request(),env);
+ assert.deepEqual(await (await readAltGenerationTotal(env)).json(),{total:1});
+ env.AI.run=async()=>({response:'invalid'});
+ await handleAltText(request(),env);
+ await handleAltText(request('https://other.test'),env);
+ assert.deepEqual(await (await readAltGenerationTotal(env)).json(),{total:1});
+ assert.equal(env.sqlite.prepare('SELECT requests FROM ai_daily_usage').get().requests,2);
+});
+test('unavailable alt counter returns an error rather than a false zero',async()=>{
+ assert.equal((await readAltGenerationTotal({DB:{prepare(){throw Error('offline');}}})).status,503);
 });

@@ -1,6 +1,6 @@
 import {cropRect} from './crop.mjs';
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-export function canvasView(sw,sh,width=1000,height=610){const scale=Math.min((width-80)/sw,(height-60)/sh);return {x:(width-sw*scale)/2,y:(height-sh*scale)/2,scale};}
+export function canvasView(sw,sh,width=1000,height=610,padding=16){const scale=Math.min(Math.max(1,width-2*padding)/sw,Math.max(1,height-2*padding)/sh);return {x:(width-sw*scale)/2,y:(height-sh*scale)/2,scale};}
 export function hitCrop(point,rect,tolerance){
   for(const [handle,x,y] of [['nw',rect.x,rect.y],['ne',rect.x+rect.width,rect.y],['se',rect.x+rect.width,rect.y+rect.height],['sw',rect.x,rect.y+rect.height]])if(Math.hypot(point.x-x,point.y-y)<=tolerance)return handle;
   return point.x>=rect.x&&point.x<=rect.x+rect.width&&point.y>=rect.y&&point.y<=rect.y+rect.height?'move':'outside';

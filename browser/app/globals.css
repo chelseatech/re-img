@@ -79,7 +79,7 @@ html[data-theme=dark] .help-content > details {
 .alt-info-content p+p{margin-top:8px}
 html[data-theme=dark] .alt-info-content{background:#182635;border-color:#687e94}
 html[data-theme=dark] .alt-info summary{color:#9aa6b3}
-.image-drop-target.is-loaded canvas{width:min(100%,max(280px,calc((100dvh - 460px) * 1000 / 610)));margin-inline:auto}
+.image-drop-target.is-loaded canvas{width:100%;height:clamp(280px,calc(100dvh - 360px),610px)}
 .alt-actions,.alt-progress{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:8px 0}
 .alt-actions button,.alt-panel .text-button{min-height:44px;white-space:normal}
 .alt-privacy{font-size:12px;line-height:1.5;color:#737d89;margin:0}
@@ -140,3 +140,6 @@ html[data-theme=dark] .brand .header-version{color:inherit}
 html[data-theme=dark] .history-privacy,html[data-theme=dark] .history-empty{color:#9aa6b3}
 html[data-theme=dark] .history-entry{border-color:#567086}
 @media(max-width:720px){.export-history{padding:10px}.history-entry{grid-template-columns:1fr;gap:10px}.history-image{display:flex;align-items:center;gap:10px}.history-image img{width:96px;height:64px;flex:none}.history-image strong{margin:0}.history-entry .alt-fields{gap:8px}}
+
+/* Keep all three estimates readable on narrow screens. */
+@media(max-width:720px){header .header-metrics{flex-wrap:wrap}}

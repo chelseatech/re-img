@@ -88,3 +88,5 @@ This builds the app, applies the additive schema in `cloudflare/schema.sql` and 
 For a different Cloudflare account, create your own D1 database and update its ID in `vite.config.ts` before deploying. Do not commit OAuth tokens, API tokens, `.env` files, local database state or private image fixtures.
 
 The browser source, README and deployment should move together. See [Cloudflare release details](CLOUDFLARE_MIGRATION.md), [cloud AI validation](CLOUDFLARE_AI_VALIDATION.md), and the earlier [caption-quality regression](ALT_TEXT_QUALITY_VALIDATION.md).
+
+The crop preview fits the available panel width and height with a small margin for handles. The header separately estimates alt-text time saved: successful Generate uses × (60 − 2.5) seconds. Both languages count as one generation; typing, copying, downloads and failed requests do not count. This shared counter starts at this feature’s launch, excludes review time and does not backfill earlier requests.

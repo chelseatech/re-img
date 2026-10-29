@@ -7,7 +7,7 @@ const copy={
  en:{title:'Alt text',generate:'Generate alt text',replace:'Replace both drafts',keep:'Keep my text',confirm:'Generating again will replace both fields. Copy any text you want to keep first.',stop:'Stop waiting',describing:'Generating both languages with Cloudflare…',preparing:'Preparing the final crop…',failed:'Cloudflare could not finish. Please retry or write the descriptions yourself.',limit:'The shared AI limit has been reached (100 per day, 10 per minute). Try later or write your descriptions manually.',unavailable:'Cloud AI is temporarily unavailable. You can still write and copy descriptions.',copy:'Copy',copied:'Copied.',clipboard:'Copy failed. Select the text and use Ctrl+C or ⌘C.',stale:'The image or crop changed. Check both descriptions again.',choose:'Choose a preset to generate from the final crop.'},
  fr:{title:'Texte alternatif',generate:'Générer le texte alternatif',replace:'Remplacer les deux brouillons',keep:'Conserver mes textes',confirm:'Une nouvelle génération remplacera les deux champs. Copiez d’abord les textes à conserver.',stop:'Arrêter l’attente',describing:'Génération des deux langues avec Cloudflare…',preparing:'Préparation du recadrage final…',failed:'Cloudflare n’a pas pu terminer. Réessayez ou rédigez les descriptions.',limit:'La limite partagée de l’IA est atteinte (100 par jour, 10 par minute). Réessayez plus tard ou rédigez les descriptions.',unavailable:'L’IA en nuage est temporairement indisponible. Vous pouvez toujours rédiger et copier les descriptions.',copy:'Copier',copied:'Copié.',clipboard:'La copie a échoué. Sélectionnez le texte et utilisez Ctrl+C ou ⌘C.',stale:'L’image ou le recadrage a changé. Vérifiez à nouveau les deux descriptions.',choose:'Choisissez un preset pour décrire le recadrage final.'}
 };
-type Props={lang:'en'|'fr',itemId:string,sourceKey:string,draft:AltDraft,disabled:boolean,canGenerate:boolean,onChange:(draft:AltDraft)=>void,prepareImage:()=>Promise<Blob>};
+type Props={lang:'en'|'fr',itemId:string,sourceKey:string,draft:AltDraft,disabled:boolean,canGenerate:boolean,onChange:(draft:AltDraft)=>void,onGenerated?:()=>void,prepareImage:()=>Promise<Blob>};
 export default function AltTextPanel(props:Props){
  const {lang,itemId,sourceKey,draft,disabled,canGenerate,onChange,prepareImage}=props;
  const t=copy[lang],id=useId(),controller=useRef<AbortController|null>(null),requestId=useRef(0),latest=useRef(props);latest.current=props;
@@ -31,6 +31,7 @@ export default function AltTextPanel(props:Props){
    if(typeof data.en!=='string'||typeof data.fr!=='string'||!data.en.trim()||!data.fr.trim())throw Error('failed');
    if(ticket!==requestId.current||latest.current.itemId!==startItem)return;
    latest.current.onChange({...latest.current.draft,en:data.en,fr:data.fr,basedOn:startKey,reviewedKey:''});
+   latest.current.onGenerated?.();
    setStage('');
   }catch(e){if(ticket===requestId.current){setStage('');setError(e instanceof Error&&['limit','unavailable'].includes(e.message)?e.message:'failed');}}
   finally{clearTimeout(timeout);if(ticket===requestId.current)controller.current=null;}

@@ -17,7 +17,7 @@ import {altSourceKey,editAltDraft} from '../lib/alt-text.mjs';
 import ExportHistory,{type HistoryEntry} from './export-history';
 import {readHistory,writeHistory,clearHistory,addHistory,editHistoryDraft,historyThumbnail} from '../lib/export-history.mjs';
 import {createAltImage,altAnalysisSettings} from '../lib/alt-image.mjs';
-import {formatTimeSaved} from '../lib/time-saved.mjs';
+import {formatTimeSaved,formatAltTimeSaved} from '../lib/time-saved.mjs';
 import {flexiblePolicy,flexibleDefault,flexibleMaximum} from '../lib/flexible-size.mjs';
 import {clipboardImages} from '../lib/clipboard-images.mjs';
 import {readDownloadTotal,reportDownload} from '../lib/download-count.mjs';
@@ -57,6 +57,9 @@ export default function Prep(){
   }catch{/* Keep descriptions even if a thumbnail cannot be made. */}
  }
  const [dark,setDark]=useState(false);
+ const [altTotal,setAltTotal]=useState<number|null>(null);
+ async function refreshAltTotal(){try{const response=await fetch('/api/alt-text',{cache:'no-store',signal:AbortSignal.timeout(6000)});if(!response.ok)return;const data=await response.json() as {total:number};if(Number.isSafeInteger(data.total)&&data.total>=0)setAltTotal(previous=>Math.max(previous??0,data.total));}catch{}}
+ useEffect(()=>{void refreshAltTotal();const timer=setInterval(()=>{if(document.visibilityState==='visible')void refreshAltTotal();},30000);return()=>clearInterval(timer);},[]);
  const [downloadTotal,setDownloadTotal]=useState<number|null>(null);
  const receiveTotal=(value:number)=>setDownloadTotal(previous=>Math.max(previous??0,value));
  useEffect(()=>{let active=true;const refresh=()=>{void readDownloadTotal().then(value=>{if(active)receiveTotal(value);}).catch(()=>{});};refresh();const timer=setInterval(()=>{if(document.visibilityState==='visible')refresh();},30000);const visible=()=>{if(document.visibilityState==='visible')refresh();};document.addEventListener('visibilitychange',visible);return()=>{active=false;clearInterval(timer);document.removeEventListener('visibilitychange',visible);};},[]);
@@ -173,6 +176,10 @@ export default function Prep(){
  <summary><span className="metric-label-full">{t.estimatedTimeSaved}:</span><span className="metric-label-short" aria-hidden="true">{t.savedCompact}</span> <span className="time-saved-value" title={formatTimeSaved(downloadTotal,lang)}>{formatTimeSaved(downloadTotal,lang)}</span> <span className="analytics-info" aria-hidden="true">?</span></summary>
  <div className="savings-explanation" tabIndex={0} role="note" aria-label={t.estimatedTimeSaved}><p>{t.savingsFormula}</p><p>{t.savingsBasis}</p><p>{t.savingsCount}</p></div>
  </details>
+ <details className="time-saved alt-time-saved" onKeyDown={event=>{if(event.key==='Escape'){event.currentTarget.open=false;event.currentTarget.querySelector('summary')?.focus();}}}>
+ <summary><span>{t.altSaved}:</span> <span className="time-saved-value">{formatAltTimeSaved(altTotal,lang)}</span> <span className="analytics-info" aria-hidden="true">?</span></summary>
+ <div className="savings-explanation" tabIndex={0} role="note" aria-label={t.altSaved}><p>{t.altSavingsFormula}</p><p>{t.altSavingsBasis}</p><p>{t.altSavingsCount} {altTotal===null?'—':altTotal.toLocaleString(lang)}</p></div>
+ </details>
  </div><div className="header-actions"><div className="header-preferences"><button className="secondary theme-toggle" aria-label={t.theme} aria-pressed={dark} onClick={changeTheme}>{dark?t.light:t.dark}</button>{features.batch&&<div className="mode-bar" role="group" aria-label={t.editMode}><button aria-pressed={mode==='single'} disabled={busy} onClick={()=>setMode('single')}>{t.single}</button><button aria-pressed={mode==='batch'} disabled={busy} onClick={()=>setMode('batch')}>{t.batch}</button></div>}</div><div className="header-utilities"><button className="secondary language" aria-label={t.language} onClick={changeLanguage}>{lang==='fr'?'EN':'FR'}</button><button className="help-button" aria-label={t.help} aria-haspopup="dialog" onClick={()=>setHelp(true)}>?</button></div></div></div></header>
  <main className={`app-layout ${mode}-mode`}>
  {mode==='batch'&&<aside className="queue panel"><div className="section-heading"><h2>{t.images} <span className="count">{items.length}</span></h2><button className="text-button" disabled={busy||!items.length} onClick={clear}>{t.clear}</button></div>
@@ -201,7 +208,7 @@ export default function Prep(){
  {current&&(specification?.selectableRatios||specification?.displayGuides)&&<p className="guide-caption">{specification?.displayGuides?t.displayGuides:t.ratioGuides}</p>}
 
  {current?.preview&&selected==='uo-20'&&<p className="hero-preview-caption"><strong>{t.heroPreviewTitle}</strong> {t.heroPreviewHelp}</p>}
- {current?.preview&&<AltTextPanel lang={lang} itemId={current.id} sourceKey={altSourceKey(current)} draft={current.alt??{}} disabled={settingsBusy} canGenerate={configured} onChange={alt=>updateAlt(current.id,alt)} prepareImage={prepareAltImage}/>}
+ {current?.preview&&<AltTextPanel onGenerated={()=>void refreshAltTotal()} lang={lang} itemId={current.id} sourceKey={altSourceKey(current)} draft={current.alt??{}} disabled={settingsBusy} canGenerate={configured} onChange={alt=>updateAlt(current.id,alt)} prepareImage={prepareAltImage}/>}
  </section></section>
  <ExportHistory lang={lang} entries={history} storageFailed={historyFailed} onClear={removeHistory} onEdit={editHistory}/>
  </main>

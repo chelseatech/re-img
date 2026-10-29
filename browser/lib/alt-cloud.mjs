@@ -37,6 +37,16 @@ export async function handleAltText(request,env,{dailyLimit=100,minuteLimit=10,n
   if(!value||typeof value.en!=='string'||typeof value.fr!=='string'||!value.en.trim()||!value.fr.trim()||value.en.length>600||value.fr.length>600)throw Error('Invalid bilingual response');
   const usage=result.usage??{};
   try{await env.DB.prepare('UPDATE ai_daily_usage SET input_tokens=input_tokens+?,output_tokens=output_tokens+? WHERE day=?').bind(count(usage.prompt_tokens??usage.input_tokens),count(usage.completion_tokens??usage.output_tokens),day).run();}catch{/* Quota remains reserved even if optional token accounting fails. */}
+  try{await env.DB.prepare('INSERT INTO ai_generation_totals(id,total) VALUES(1,1) ON CONFLICT(id) DO UPDATE SET total=total+1').run();}catch{/* Analytics must not discard usable drafts. */}
   return reply({en:value.en.trim(),fr:value.fr.trim()});
  }catch{return reply({error:'generation_failed'},502);}
+}
+
+export async function readAltGenerationTotal(env){
+ try{
+  const row=await env.DB.prepare('SELECT total FROM ai_generation_totals WHERE id=1').first();
+  const total=row?.total??0;
+  if(!Number.isSafeInteger(total)||total<0)throw Error('Invalid total');
+  return reply({total});
+ }catch{return reply({error:'Counter unavailable.'},503);}
 }

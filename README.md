@@ -97,3 +97,5 @@ Detailed setup, privacy and release guidance: [`browser/README.md`](browser/READ
 | `feat/re-image-browser` branch | Earlier browser snapshot, superseded by current `browser/` source |
 
 The former ChatGPT Sites URL is a separate version 29 release with on-device AI. Use the Cloudflare URL for the current app. Old validation documents describe their own release; current delivery evidence is in `browser/CLOUDFLARE_AI_VALIDATION.md`. Safari and physical mobile hardware remain acceptance checks.
+
+The crop preview fits the available panel width and height with a small margin for handles. The header separately estimates alt-text time saved: successful Generate uses × (60 − 2.5) seconds. Both languages count as one generation; typing, copying, downloads and failed requests do not count. This shared counter starts at this feature’s launch, excludes review time and does not backfill earlier requests.

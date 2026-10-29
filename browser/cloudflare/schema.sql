@@ -22,3 +22,9 @@ CREATE TABLE IF NOT EXISTS ai_daily_usage (
  input_tokens INTEGER NOT NULL DEFAULT 0,
  output_tokens INTEGER NOT NULL DEFAULT 0
 );
+
+-- Successful bilingual generations only; starts at zero when this feature launches.
+CREATE TABLE IF NOT EXISTS ai_generation_totals (
+ id INTEGER PRIMARY KEY NOT NULL,
+ total INTEGER NOT NULL DEFAULT 0
+);
