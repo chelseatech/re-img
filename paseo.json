@@ -1,0 +1,16 @@
+{
+  "worktree": {
+    "setup": "cd browser && npm run install:ci"
+  },
+  "scripts": {
+    "test": {
+      "command": "cd browser && npm test"
+    },
+    "typecheck": {
+      "command": "cd browser && npx tsc --noEmit"
+    },
+    "build": {
+      "command": "cd browser && npm run build"
+    }
+  }
+}
